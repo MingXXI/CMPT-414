@@ -6,6 +6,6 @@ cv2.namedWindow("Test Window");
 
 cv2.imshow("test image", im);
 
-cv2.waitKey(100);
+cv2.waitKey(10000);
 
 cv2.destroyAllWindows()
