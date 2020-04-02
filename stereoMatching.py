@@ -1,11 +1,12 @@
 from matplotlib import pyplot
 import numpy as np
-import PIL.Image
-import cv2
-from energy import energy.py
+from PIL import Image
+# import PIL.image 	#require PIL package installation. 
+import cv2 	#
+# from energy import energy.py
 import collections # check 2 list has same elements elements 
 from itertools import permutations # for choosing alpha/beta randomly
-import copy 
+import copy # to do deep copy
 
 def imageProcess(file):
 	im=Image.open(file)
@@ -107,7 +108,11 @@ def swap(dDict,dLL,edge,l1,r1,disInd):
 		else:
 			return dLL,dDict
 
+def main():
+	left_image = imageProcess('image_left.ppm')
+	right_image = imageProcess('image-right.ppm')
 
+	cv2.imshow(left_image[1])
 
 
 if __name__ =="__main__":
