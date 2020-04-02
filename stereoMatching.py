@@ -13,24 +13,25 @@ def imageProcess(file):
 	width,height = im.size
 	pixelNum=width*height
 	im=im.convert("L")
-	data=im.getdata()
-	data=np.matrix(data,dtype='float')
-	new_data=np.reshape(data,(height,width))
+	# data=im.getdata()
+	data=np.array(im,dtype='int')
+	# new_data=np.reshape(data,(height,width))
 	# use directory store neighbors of each vertex
+	imEdge = {}
 	imEdge[(0,0)]=[[2,0],[1,0],[0,1]]
 	imEdge[(width-1,height-1)]=[[2,0],[width-2,height-1],[width-1,height-2]]
 	imEdge[(0,height-1)]=[[2,0],[1,height-1],[0,height-2]]
 	imEdge[(width-1,0)]=[[2,0],[width-1,1],[width-1-2,0]]
-	for i in height-3:
+	for i in range(height-3):
 		imEdge[(0,i+1)]=[[3,0],[0,i],[0,i+2],[1,i+1]]
 		imEdge[(width-1,i+1)]=[[3,0],[width-1,i],[width-1,i+2],[width-2,i+1]]
-	for j in width-3:
+	for j in range(width-3):
 		imEdge[(j+1,0)]=[[3,0],[j,0],[j+2,0],[j+1,1]]
 		imEdge[(j+1,height-1)]=[[3,0],[j,height-1],[j+2,height-1],[j+1,height-2]]
-	for i in height-3:
-		for j in width-3:
+	for i in range(height-3):
+		for j in range(width-3):
 			imEdge[(i+1,j+1)]=[[4,0],[i,j+1],[i+1,j],[i+2,j+1],[i+1,j+2]]
-	return new_data,imEdge
+	return data,imEdge
 
 #dD: dis dictionary
 #disList: dis List
@@ -46,11 +47,12 @@ def energyTotal(disList,l1,r1,label,edge,dDict,coe):
 		total=D+coe*V
 	return total
 def energyData(x,y,label,l1,r1):
-	w,h=l1.size
-	if (x+label+1>=h):
+	w,h=r1.shape
+	# print('h = ',h)
+	if (x+label+1>=w):
 		# deal with boundary of the image. some pixel in right omage do not appear in left image
 		return np.absolute(r1[x][y]+1)
-	else :
+	else:
 		return np.absolute(r1[x][y]-l1[x+label+1][y])
 def energySmoothness(x,y,edge,dDict):
 	totalcount=0
@@ -62,15 +64,18 @@ def energySmoothness(x,y,edge,dDict):
 	return totalcount
 def initState(l1,r1,disInd):
 	dLL = [[] for x in range(disInd)]
-	w,h=r1.size
+	w,h=r1.shape
 	dDict={}
 	for i in range(w):
 		for j in range(h):
 			helperList=[]
 			for d in range(disInd):
 				A=energyData(i,j,d,l1,r1)
+				# print("A is ", A)
 				helperList.append(A)
-			helper1=helperList.index(min(helperList))
+			# print(helperList)
+			list_min = min(helperList)
+			helper1=helperList.index(list_min)
 			dLL[helper1].append((i,j))
 			dDict[(i,j)]=helper1
 
@@ -109,10 +114,33 @@ def swap(dDict,dLL,edge,l1,r1,disInd):
 			return dLL,dDict
 
 def main():
-	left_image = imageProcess('image_left.ppm')
-	right_image = imageProcess('image-right.ppm')
+	# left_image = imageProcess('image_left.png')
+	# right_image = imageProcess('image_right.png')
+	# left_image = cv2.imread('image_left.ppm')
+	# im=Image.open('image_left.ppm')
+	# width,height = im.size
+	# pixelNum=width*height
+	# im=im.convert("L")
+	# data=im.getdata()
+	# data=np.matrix(data,dtype='float')
+	# new_data=np.reshape(data,(height,width))
+	# print(left_image[1])
 
-	cv2.imshow(left_image[1])
+	# cv2.imshow("first try",left_image)
+	# cv2.waitKey(100);
+	# print(new_data)
+
+	left_image = imageProcess('image_left.png')
+	right_image = imageProcess('image_right.png')
+	# left_pixel = cv2.imread('image_left.png')
+	# right_pixel = cv2.imread('image_right.png')
+	# print(type(right_image[0][0][0]))
+	disInd = 4
+	initial = initState(left_image[0],right_image[0],disInd)
+
+
+	print(initial[0])
+
 
 
 if __name__ =="__main__":
