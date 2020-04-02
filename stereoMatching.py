@@ -137,9 +137,11 @@ def main():
 	# print(type(right_image[0][0][0]))
 	disInd = 4
 	initial = initState(left_image[0],right_image[0],disInd)
+	# swap(initial[1],initial[0],right_image[1],left_image,right_image,disInd)
 
 
 	print(initial[0])
+	swap(initial[1],initial[0],right_image[1],left_image[0],right_image[0],disInd)
 
 
 
