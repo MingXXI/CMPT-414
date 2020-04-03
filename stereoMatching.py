@@ -119,8 +119,6 @@ def swap(dDict,dLL,edge,l1,r1,disInd):
 	helper1=[x for x in range(disInd)]
 	helper2=permute(helper1)
 	success=0
-	print(288*384)
-	print(len(dLL[0]),len(dLL[1]),len(dLL[2]),len(dLL[3]))
 	while (success == 0):
 		for x in helper2:
 			temp_energy = []
@@ -132,20 +130,25 @@ def swap(dDict,dLL,edge,l1,r1,disInd):
 			org_energy1 = energyTotal(temp_beta,l1,r1,x[1],edge,dDict,coe)
 			org_total = org_energy+org_energy1
 			for i in dLL[x[0]]:
-				print(i,counter)
 				temp_alpha.remove(i)
 				temp_beta.append(i)
 				temp_energy.append(energyTotal(temp_alpha,l1,r1,x[0],edge,dDict,coe)+energyTotal(temp_beta,l1,r1,x[1],edge,dDict,coe))
+				print("K")
 				temp_alpha.append(i)
 				temp_beta.remove(i)
 				counter+=1
+			print(temp_energy)
+			if (len(dLL[x[0]])==0):
+				print("not suitable disparity index")
+				success=2
+				break
 			helper3=min(temp_energy)
+			print(helper3)
 			if (helper3<org_total):
 				success=1
-				del dLL[x[0]][temp_energy.index(helper3)]
 				dLL[x[1]].append(dLL[x[0]][temp_energy.index(helper3)])
-				dDict.update({dLL[x[0]][temp_energy.index(helper3)]:x[1]})
-				print("0000")
+				del dLL[x[0]][temp_energy.index(helper3)]
+				dDict.update({dLL[x[1]][-1]:x[1]})
 		if  (success == 1):
 			success = 0
 		else:
@@ -168,12 +171,12 @@ def main():
 	# cv2.waitKey(100);
 	# print(new_data)
 
-	left_image = imageProcess('image_left.png')
-	right_image = imageProcess('image_right.png')
+	left_image = imageProcess('test1.png')
+	right_image = imageProcess('test2.png')
 	# left_pixel = cv2.imread('image_left.png')
 	# right_pixel = cv2.imread('image_right.png')
 	# print(type(right_image[0][0][0]))
-	disInd = 4
+	disInd = 2
 	initial= initState(left_image[0],right_image[0],disInd)
 	#print(initial[0][0][218])
 	A,B=swap(initial[1],initial[0],left_image[1],left_image[0],right_image[0],disInd)
