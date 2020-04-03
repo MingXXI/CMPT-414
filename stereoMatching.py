@@ -1,3 +1,4 @@
+# width(y) and height(x) is opposite
 from matplotlib import pyplot
 import numpy as np
 from PIL import Image
@@ -7,31 +8,53 @@ import cv2 	#
 import collections # check 2 list has same elements elements 
 from itertools import permutations # for choosing alpha/beta randomly
 import copy # to do deep copy
-
+import time
 def imageProcess(file):
-	im=Image.open(file)
-	width,height = im.size
+	im=cv2.imread(file)
+	height,width,color = im.shape
+	#WIDTH is y-axis, HEIGHT is x-axis
 	pixelNum=width*height
-	im=im.convert("L")
+	im2=cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
 	# data=im.getdata()
-	data=np.array(im,dtype='int')
+	data=np.array(im2,dtype='int')
 	# new_data=np.reshape(data,(height,width))
 	# use directory store neighbors of each vertex
 	imEdge = {}
-	imEdge[(0,0)]=[[2,0],[1,0],[0,1]]
-	imEdge[(width-1,height-1)]=[[2,0],[width-2,height-1],[width-1,height-2]]
-	imEdge[(0,height-1)]=[[2,0],[1,height-1],[0,height-2]]
-	imEdge[(width-1,0)]=[[2,0],[width-1,1],[width-1-2,0]]
-	for i in range(height-3):
-		imEdge[(0,i+1)]=[[3,0],[0,i],[0,i+2],[1,i+1]]
-		imEdge[(width-1,i+1)]=[[3,0],[width-1,i],[width-1,i+2],[width-2,i+1]]
-	for j in range(width-3):
-		imEdge[(j+1,0)]=[[3,0],[j,0],[j+2,0],[j+1,1]]
-		imEdge[(j+1,height-1)]=[[3,0],[j,height-1],[j+2,height-1],[j+1,height-2]]
-	for i in range(height-3):
-		for j in range(width-3):
-			imEdge[(i+1,j+1)]=[[4,0],[i,j+1],[i+1,j],[i+2,j+1],[i+1,j+2]]
+	imEdge[(0,0)]=[[1,0],[0,1]]
+
+	##new version
+	imEdge[(height-1,width-1)]=[[height-1,width-2],[height-2,width-1]]
+	imEdge[(height-1,0)]=[[height-1,1],[height-2,0]]
+	imEdge[(0,width-1)]=[[1,width-1],[0,width-2]]
+	###
+	for i in range(height-2):
+		imEdge[(i+1,0)]=[[i,0],[i+2,0],[i+1,1]]
+		imEdge[(i+1,width-1)]=[[i,width-1],[i+2,width-1],[i+1,width-2]]
+	for j in range(width-2):
+		imEdge[(0,j+1)]=[[0,j],[0,j+2],[1,j+1]]
+		imEdge[(height-1,j+1)]=[[height-1,j],[height-1,j+2],[height-2,j+1]]
+	for i in range(height-2):
+		for j in range(width-2):
+			imEdge[(i+1,j+1)]=[[i+1,j],[i,j+1],[i+1,j+2],[i+2,j+1]]
 	return data,imEdge
+
+
+
+	#origin
+	# imEdge[(width-1,height-1)]=[[width-2,height-1],[width-1,height-2]]
+	# imEdge[(0,height-1)]=[[1,height-1],[0,height-2]]
+	# imEdge[(width-1,0)]=[[width-1,1],[width-1-2,0]]
+	# ###
+	# for i in range(height-2):
+	# 	imEdge[(0,i+1)]=[[0,i],[0,i+2],[1,i+1]]
+	# 	imEdge[(width-1,i+1)]=[[width-1,i],[width-1,i+2],[width-2,i+1]]
+	# for j in range(width-2):
+	# 	imEdge[(j+1,0)]=[[j,0],[j+2,0],[j+1,1]]
+	# 	imEdge[(j+1,height-1)]=[[j,height-1],[j+2,height-1],[j+1,height-2]]
+	# for i in range(height-2):
+	# 	for j in range(width-2):
+	# 		imEdge[(i+1,j+1)]=[[i,j+1],[i+1,j],[i+2,j+1],[i+1,j+2]]
+	# return data,imEdge
 
 #dD: dis dictionary
 #disList: dis List
@@ -47,13 +70,15 @@ def energyTotal(disList,l1,r1,label,edge,dDict,coe):
 		total=D+coe*V
 	return total
 def energyData(x,y,label,l1,r1):
-	w,h=r1.shape
+	h,w=l1.shape
+	#print(h,w)
 	# print('h = ',h)
-	if (x+label+1>=w):
+	if (y+label+1>=w):
 		# deal with boundary of the image. some pixel in right omage do not appear in left image
 		return np.absolute(r1[x][y]+1)
 	else:
-		return np.absolute(r1[x][y]-l1[x+label+1][y])
+		
+		return np.absolute(r1[x][y]-l1[x][y+label+1])
 def energySmoothness(x,y,edge,dDict):
 	totalcount=0
 	A=dDict[(x,y)]
@@ -64,10 +89,11 @@ def energySmoothness(x,y,edge,dDict):
 	return totalcount
 def initState(l1,r1,disInd):
 	dLL = [[] for x in range(disInd)]
-	w,h=r1.shape
+	h,w=r1.shape
 	dDict={}
-	for i in range(w):
-		for j in range(h):
+	#sadasd
+	for i in range(h):
+		for j in range(w):
 			helperList=[]
 			for d in range(disInd):
 				A=energyData(i,j,d,l1,r1)
@@ -85,6 +111,7 @@ def permute(nums):
 	result=[]
 	for i in permutations(nums,2):
 		result.append(list(i))
+	print(result)
 	return result
 
 def swap(dDict,dLL,edge,l1,r1,disInd):
@@ -136,15 +163,17 @@ def main():
 	# right_pixel = cv2.imread('image_right.png')
 	# print(type(right_image[0][0][0]))
 	disInd = 4
-	initial = initState(left_image[0],right_image[0],disInd)
-	# swap(initial[1],initial[0],right_image[1],left_image,right_image,disInd)
-
-
-	print(initial[0])
-	swap(initial[1],initial[0],right_image[1],left_image[0],right_image[0],disInd)
+	initial= initState(left_image[0],right_image[0],disInd)
+	#print(initial[0][0][218])
+	A,B=swap(initial[1],initial[0],left_image[1],left_image[0],right_image[0],disInd)
+	#initial,dirct=imageProcess("template_K.png")
+	#print(dirct[(0,0)])
+	#print(dirct[(1,0)])
+	#print(dirct[(25,25)])
 
 
 
 if __name__ =="__main__":
+	start_time=time.time()
 	main()
-
+	print("---%s seconds---" %(time.time()-start_time))
