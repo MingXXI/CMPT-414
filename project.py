@@ -16,18 +16,7 @@ import numpy as np
 
 from PIL import Image
 
-test = Image.open('image_left.png')
-width,height = test.size
-test = test.convert("L")
-data = np.array(test)
-print(type(data))
-print(type(test))
-new_data=np.reshape(data,(height,width))
-
-
-w,h = test.size
-print('w is', w, 'h is', h)
-print(data.size)
-w,h = new_data.shape
-print('new data')
-print('w is', w, 'h is', h)
+test = np.uint8(np.zeros((3,10),dtype = int))
+test += 20
+print(test)
+print(test.shape)

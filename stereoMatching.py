@@ -119,6 +119,7 @@ def swap(dDict,dLL,edge,l1,r1,disInd):
 	helper1=[x for x in range(disInd)]
 	helper2=permute(helper1)
 	success=0
+	h,w = r1.shape
 	while (success == 0):
 		for x in helper2:
 			temp_energy = []
@@ -126,10 +127,42 @@ def swap(dDict,dLL,edge,l1,r1,disInd):
 			temp_beta = copy.deepcopy(dLL[x[1]])
 			#temp_beta = dLL[x[1]]
 			coe=5
-			org_energy = energyTotal(temp_alpha,l1,r1,x[0],edge,dDict,coe)
-			org_energy1 = energyTotal(temp_beta,l1,r1,x[1],edge,dDict,coe)
-			org_total = org_energy+org_energy1
+			org_energy_alpha = energyTotal(temp_alpha,l1,r1,x[0],edge,dDict,coe)
+			org_energy_beta = energyTotal(temp_beta,l1,r1,x[1],edge,dDict,coe)
+			org_total = org_energy_alpha+org_energy_beta
 			for i in dLL[x[0]]:
+
+				# new total energy method
+				if (i[1]+x[0]+1>=w):
+					alpha_data_change = np.absolute(r1[i[0]][i[1]]+1)
+				else:	
+					alpha_data_change = np.absolute(r1[i[0]][i[1]]-l1[i[0]][i[1]+x[0]+1])
+
+				if (i[1]+x[1]+1>=w):
+					beta_data_change = np.absolute(r1[i[0]][i[1]]+1)
+				else:	
+					beta_data_change = np.absolute(r1[i[0]][i[1]]-l1[i[0]][i[1]+x[1]+1])
+
+				alpha_smooth_change = 0
+				beta_smooth_change = 0
+				A = x[0]
+				B = edge[(i[0],i[1])] 
+				for j in B:
+					w = dDict[(j[0],j[1])]
+					alpha_current_change = np.absolute(w-A)
+					beta_current_change = np.absolute(w-x[1])
+					if alpha_current_change == 0:
+						alpha_smooth_change += np.absolute(w-x[1])
+					else:
+						alpha_smooth_change -= alpha_current_change
+					if beta_current_change == 0:
+						beta_smooth_change -= np.absolute(w-x[0])
+					else:
+						beta_smooth_change += beta_current_change
+				total_change = alpha_smooth_change+beta_smooth_change+alpha_data_change+beta_data_change
+
+
+				#old total energy method
 				temp_alpha.remove(i)
 				temp_beta.append(i)
 				temp_energy.append(energyTotal(temp_alpha,l1,r1,x[0],edge,dDict,coe)+energyTotal(temp_beta,l1,r1,x[1],edge,dDict,coe))
@@ -155,8 +188,8 @@ def swap(dDict,dLL,edge,l1,r1,disInd):
 			return dLL,dDict
 
 def main():
-	# left_image = imageProcess('image_left.png')
-	# right_image = imageProcess('image_right.png')
+	left_image = imageProcess('image_left.png')
+	right_image = imageProcess('image_right.png')
 	# left_image = cv2.imread('image_left.ppm')
 	# im=Image.open('image_left.ppm')
 	# width,height = im.size
@@ -171,8 +204,8 @@ def main():
 	# cv2.waitKey(100);
 	# print(new_data)
 
-	left_image = imageProcess('test1.png')
-	right_image = imageProcess('test2.png')
+	# left_image = imageProcess('test1.png')
+	# right_image = imageProcess('test2.png')
 	# left_pixel = cv2.imread('image_left.png')
 	# right_pixel = cv2.imread('image_right.png')
 	# print(type(right_image[0][0][0]))
@@ -184,6 +217,20 @@ def main():
 	#print(dirct[(0,0)])
 	#print(dirct[(1,0)])
 	#print(dirct[(25,25)])
+	
+
+
+	# show disparity image
+	dis_im = np.uint8(np.zeros((right_image[0].shape[0],right_image[0].shape[1]),dtype = int))
+	# dis_im = np.zeros((right_image[0].shape[0],right_image[0].shape[1]),dtype = int)
+	dis_im += 255
+	for i in range(disInd):
+		for j in A[i]:
+			dis_im[j[0]][j[1]] -=  i*50
+	
+	cv2.imshow('test',dis_im)
+	cv2. waitKey(10000)
+
 
 
 
