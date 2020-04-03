@@ -115,26 +115,37 @@ def permute(nums):
 	return result
 
 def swap(dDict,dLL,edge,l1,r1,disInd):
+	counter=0
 	helper1=[x for x in range(disInd)]
 	helper2=permute(helper1)
 	success=0
+	print(288*384)
+	print(len(dLL[0]),len(dLL[1]),len(dLL[2]),len(dLL[3]))
 	while (success == 0):
 		for x in helper2:
 			temp_energy = []
 			temp_alpha = copy.deepcopy(dLL[x[0]])
+			temp_beta = copy.deepcopy(dLL[x[1]])
 			#temp_beta = dLL[x[1]]
-			coe=20
+			coe=5
 			org_energy = energyTotal(temp_alpha,l1,r1,x[0],edge,dDict,coe)
+			org_energy1 = energyTotal(temp_beta,l1,r1,x[1],edge,dDict,coe)
+			org_total = org_energy+org_energy1
 			for i in dLL[x[0]]:
+				print(i,counter)
 				temp_alpha.remove(i)
-				temp_energy.append(energyTotal(temp_alpha,l1,r1,x[0],edge,dDict,coe))
+				temp_beta.append(i)
+				temp_energy.append(energyTotal(temp_alpha,l1,r1,x[0],edge,dDict,coe)+energyTotal(temp_beta,l1,r1,x[1],edge,dDict,coe))
 				temp_alpha.append(i)
+				temp_beta.remove(i)
+				counter+=1
 			helper3=min(temp_energy)
-			if (helper3<org_energy):
+			if (helper3<org_total):
 				success=1
 				del dLL[x[0]][temp_energy.index(helper3)]
 				dLL[x[1]].append(dLL[x[0]][temp_energy.index(helper3)])
-				dDict.update({dLL[x[0]][temp_energy.index(helper3)],x[1]})
+				dDict.update({dLL[x[0]][temp_energy.index(helper3)]:x[1]})
+				print("0000")
 		if  (success == 1):
 			success = 0
 		else:
