@@ -114,30 +114,30 @@ def initState(l1,r1,disInd):
 
 def permute(nums):
 	result=list(combinations(nums,2))
-	print(result)
 	return result
 
 def makeGraph(dDict,dLL,edge,alpha,beta,r1,l1):
 # create new graph with vertex in alpha and beta 
 # giving energy and cap where cap=energy
 	pixInA=dLL[alpha]
+	print(len(pixInA))
 	pixInB=dLL[beta]
-	pixInA=pixInA.extend(pixInB)
+	pixInA.extend(pixInB)
+	print(len(pixInA))
 	numOfPix=len(pixInA)
-	print(numOfPix)
 	newGraph = maxflow.Graph[float](numOfPix,4*numOfPix)
 	#first para is num of nodes, Second para is num of Edges not accurate number
-	nodes=g.add_nodes(numOfPix)
+	nodes=newGraph.add_nodes(numOfPix)
 	# return identifiers of node added
 	for i in pixInA:
 		iInd=pixInA.index(i)
 		if(i[0]>=0):
-			if ((i[0]+1,i[1]) in dDict.keys()):
+			if ((i[0]+1,i[1]) in dDict.keys() and (i[0]+1,i[1]) in  pixInA):
 				neighbor = pixInA.index((i[0]+1,i[1]))
 				eE=edgeEnergy(alpha,beta,i[0],i[1],i[0]+1,i[1],r1)
 				newGraph.add_edge(nodes[iInd],nodes[neighbor],eE,eE)
 		if(i[1]>=0):
-			if ((i[0],i[1]+1) in dDict.keys()):
+			if ((i[0],i[1]+1) in dDict.keys() and (i[0],i[1]+1) in pixInA):
 				neighbor1 = pixInA.index((i[0],i[1]+1))
 				eE1=edgeEnergy(alpha,beta,i[0],i[1],i[0],i[1]+1,r1)
 				newGraph.add_edge(nodes[iInd],nodes[neighbor1],eE1,eE1)
@@ -147,61 +147,73 @@ def makeGraph(dDict,dLL,edge,alpha,beta,r1,l1):
 	return pixInA,newGraph,nodes
 
 def change_label(alpha,beta,pixInA,nodes,dLL,edge,newGraph):
-	for i in nodes:
-		node_label = newGraph.get_segment(i)
-		Ind = nodes.index(i)
-		new_dLL=dLL.copy()
+	new_dLL=dLL.copy()
+	if (pixInA!=[]):
 		new_dLL[alpha]=[]
 		new_dLL[beta]=[]
+	else:
+		return dLL
+	for i in nodes:
+		node_label = newGraph.get_segment(i)
+		#Ind = nodes.where(i)
 		if (node_label):
-			new_dLL[alpha].append(pixInA[Ind])
+			new_dLL[alpha].append(pixInA[i])
 		else :
-			new_dLL[beta].append(pixInA[Ind])
+			new_dLL[beta].append(pixInA[i])
 	#not sure if we need change edge relationship
-	return new_dLL,edge
+	return new_dLL
 
 def swap(dDict,dLL,edge,l1,r1,disInd):
 	counter=0
 	helper1=[x for x in range(disInd)]
 	helper2=permute(helper1)
+	print(helper2)
 	success=0
 	totalEnergy=0
+	w=[]
+	coe=15
 	for y in dLL:
 		totalEnergy+=energyTotal(y,l1,r1,dLL.index(y),edge,dDict,coe)
 	h,w = r1.shape
-	coe=15
 	while (success == 0):
 		for x in helper2:
 			newEnergy=0
 			pixInA,newGraph,nodes=makeGraph(dDict,dLL,edge,x[0],x[1],r1,l1)
+			print("new graph")
 			new_dLL=change_label(x[0],x[1],pixInA,nodes,dLL,edge,newGraph)
+			print("label change")
 			for z in new_dLL:
 				newEnergy+=energyTotal(z,l1,r1,new_dLL.index(z),edge,dDict,coe)
 			if (newEnergy < totalEnergy):
+				print("new min energy",totalEnergy,newEnergy)
 				totalEnergy=newEnergy
 				dLL=new_dLL.copy()
 				success=1
 		if  (success == 1):
 			success = 0
+			w.append(dLL)
+			print(time.time())
 		else:
-			return dLL,dDict
+			return dLL,w
 
 def main():
 	left_image = imageProcess('image_left.png')
 	right_image = imageProcess('image_right.png')
-	disInd = 2
+	disInd = 4
 	initial= initState(left_image[0],right_image[0],disInd)
+	print("init")
 	A,B=swap(initial[1],initial[0],left_image[1],left_image[0],right_image[0],disInd)
+
 	# show disparity image
-	dis_im = np.uint8(np.zeros((right_image[0].shape[0],right_image[0].shape[1]),dtype = int))
-	# dis_im = np.zeros((right_image[0].shape[0],right_image[0].shape[1]),dtype = int)
-	dis_im += 255
-	for i in range(disInd):
-		for j in A[i]:
-			dis_im[j[0]][j[1]] -=  i*50
+	# dis_im = np.uint8(np.zeros((right_image[0].shape[0],right_image[0].shape[1]),dtype = int))
+	# # dis_im = np.zeros((right_image[0].shape[0],right_image[0].shape[1]),dtype = int)
+	# dis_im += 255
+	# for i in range(disInd):
+	# 	for j in A[i]:
+	# 		dis_im[j[0]][j[1]] -=  i*50
 	
-	cv2.imshow('test',dis_im)
-	cv2. waitKey(10000)
+	# cv2.imshow('test',dis_im)
+	# cv2. waitKey(10000)
 
 
 if __name__ =="__main__":
