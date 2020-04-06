@@ -20,24 +20,26 @@ def imageProcess(file):
 	data=np.array(im2,dtype='int')
 	# new_data=np.reshape(data,(height,width))
 	# use directory store neighbors of each vertex
-	imEdge = {}
-	imEdge[(0,0)]=[[1,0],[0,1]]
+
+
+#	imEdge = {}
+#	imEdge[(0,0)]=[[1,0],[0,1]]
 
 	##new version
-	imEdge[(height-1,width-1)]=[[height-1,width-2],[height-2,width-1]]
-	imEdge[(height-1,0)]=[[height-1,1],[height-2,0]]
-	imEdge[(0,width-1)]=[[1,width-1],[0,width-2]]
+#	imEdge[(height-1,width-1)]=[[height-1,width-2],[height-2,width-1]]
+#	imEdge[(height-1,0)]=[[height-1,1],[height-2,0]]
+#	imEdge[(0,width-1)]=[[1,width-1],[0,width-2]]
 	###
-	for i in range(height-2):
-		imEdge[(i+1,0)]=[[i,0],[i+2,0],[i+1,1]]
-		imEdge[(i+1,width-1)]=[[i,width-1],[i+2,width-1],[i+1,width-2]]
-	for j in range(width-2):
-		imEdge[(0,j+1)]=[[0,j],[0,j+2],[1,j+1]]
-		imEdge[(height-1,j+1)]=[[height-1,j],[height-1,j+2],[height-2,j+1]]
-	for i in range(height-2):
-		for j in range(width-2):
-			imEdge[(i+1,j+1)]=[[i+1,j],[i,j+1],[i+1,j+2],[i+2,j+1]]
-	return data,imEdge
+#	for i in range(height-2):
+#		imEdge[(i+1,0)]=[[i,0],[i+2,0],[i+1,1]]
+#		imEdge[(i+1,width-1)]=[[i,width-1],[i+2,width-1],[i+1,width-2]]
+#	for j in range(width-2):
+#		imEdge[(0,j+1)]=[[0,j],[0,j+2],[1,j+1]]
+#		imEdge[(height-1,j+1)]=[[height-1,j],[height-1,j+2],[height-2,j+1]]
+#	for i in range(height-2):
+#		for j in range(width-2):
+#			imEdge[(i+1,j+1)]=[[i+1,j],[i,j+1],[i+1,j+2],[i+2,j+1]]
+	return data
 
 
 
@@ -63,12 +65,12 @@ def imageProcess(file):
 # coe: Lamda
 
 
-def energyTotal(disList,l1,r1,label,edge,dDict,coe):
+def energyTotal(disList,l1,r1,label,dDict,coe):
 	total=0
 	for i in disList:
 		D=energyData(i[0],i[1],label,l1,r1)
-		V=energySmoothness(i[0],i[1],edge,dDict)
-		total=D+coe*V
+		V=energySmoothness(i[0],i[1],r1,dDict)
+		total+=(D+coe*V)
 	return total
 def energyData(x,y,label,l1,r1):
 	h,w=l1.shape
@@ -76,20 +78,40 @@ def energyData(x,y,label,l1,r1):
 	# print('h = ',h)
 	if (y+label+1>=w):
 		# deal with boundary of the image. some pixel in right omage do not appear in left image
-		return np.absolute(r1[x][y]+1)
+		return min(np.absolute(r1[x][y]-l1[x][y-label-1]),20)
 	else:
 		
-		return np.absolute(r1[x][y]-l1[x][y+label+1])
-def energySmoothness(x,y,edge,dDict):
+		return min(np.absolute(r1[x][y]-l1[x][y+label+1]),20)
+def energySmoothness(x,y,r1,dDict):
 	totalcount=0
-	A=dDict[(x,y)]
-	B=edge[(x,y)] 
-	for i in B:
-		w=dDict[(i[0],i[1])]
-		totalcount=totalcount+np.absolute(w-A)
+	A=dDict[(x,y)] 
+	h,w=r1.shape
+	if(x>=1):
+		totalcount+=np.absolute(A-dDict[(x-1,y)])
+	if(y>=1):
+		totalcount+=np.absolute(A-dDict[(x,y-1)])
 	return totalcount
-def edgeEnergy(alpha,beta,x1,y1,x2,y2,r1):
-	count=np.absolute(alpha-beta)*20*(np.absolute(r1[x1][y1]-r1[x2][y2]))
+def energysmooth(x,y,r1,dDict):
+	energeycount=0
+	h,w=r1.shape
+	if(x>=1):
+		energeycount+=abs(dDict[(x,y)]-dDict[(x-1,y)])
+	if(y>=1):
+		energeycount+=abs(dDict[(x,y)]-dDict[(x,y-1)])
+	if(x<=h-2):
+		energeycount+=abs(dDict[(x,y)]-dDict[(x+1,y)])
+	if(y<=w-2):
+		energeycount+=abs(dDict[(x,y)]-dDict[(x,y+1)])
+
+	return energeycount
+
+
+
+
+def edgeEnergy(dDict,x1,y1,x2,y2,r1):
+	alpha = dDict[(x1,y1)]
+	beta = dDict[(x2,y2)]
+	count=((alpha-beta)!=0)*(0.3*(np.absolute(r1[x1][y1]-r1[x2][y2])>10)+20*(np.absolute(r1[x1][y1]-r1[x2][y2])<10))
 	return count
 
 def initState(l1,r1,disInd):
@@ -116,12 +138,13 @@ def permute(nums):
 	result=list(combinations(nums,2))
 	return result
 
-def makeGraph(dDict,dLL,edge,alpha,beta,r1,l1):
+def makeGraph(dDict,dLL,alpha,beta,r1,l1):
 # create new graph with vertex in alpha and beta 
 # giving energy and cap where cap=energy
-	pixInA=dLL[alpha]
+###change
+	pixInA=dLL[alpha].copy()
 	print(len(pixInA))
-	pixInB=dLL[beta]
+	pixInB=dLL[beta].copy()
 	pixInA.extend(pixInB)
 	print(len(pixInA))
 	numOfPix=len(pixInA)
@@ -134,19 +157,20 @@ def makeGraph(dDict,dLL,edge,alpha,beta,r1,l1):
 		if(i[0]>=0):
 			if ((i[0]+1,i[1]) in dDict.keys() and (i[0]+1,i[1]) in  pixInA):
 				neighbor = pixInA.index((i[0]+1,i[1]))
-				eE=edgeEnergy(alpha,beta,i[0],i[1],i[0]+1,i[1],r1)
+				eE=edgeEnergy(dDict,i[0],i[1],i[0]+1,i[1],r1)
 				newGraph.add_edge(nodes[iInd],nodes[neighbor],eE,eE)
 		if(i[1]>=0):
 			if ((i[0],i[1]+1) in dDict.keys() and (i[0],i[1]+1) in pixInA):
 				neighbor1 = pixInA.index((i[0],i[1]+1))
-				eE1=edgeEnergy(alpha,beta,i[0],i[1],i[0],i[1]+1,r1)
+				eE1=edgeEnergy(dDict,i[0],i[1],i[0],i[1]+1,r1)
 				newGraph.add_edge(nodes[iInd],nodes[neighbor1],eE1,eE1)
-		sC= energySmoothness(i[0],i[1],edge,dDict) + energyData(i[0],i[1],alpha,l1,r1)
-		tC= energySmoothness(i[0],i[1],edge,dDict) + energyData(i[0],i[1],beta,l1,r1)
+		sC= 5*energySmoothness(i[0],i[1],r1,dDict) + energyData(i[0],i[1],alpha,l1,r1)*10
+		tC= 5*energySmoothness(i[0],i[1],r1,dDict) + energyData(i[0],i[1],beta,l1,r1)*10
 		newGraph.add_tedge(nodes[iInd],sC,tC)
 	return pixInA,newGraph,nodes
 
-def change_label(alpha,beta,pixInA,nodes,dLL,edge,newGraph):
+def change_label(alpha,beta,pixInA,nodes,dLL,newGraph,dDict):
+	flow=newGraph.maxflow()
 	new_dLL=dLL.copy()
 	if (pixInA!=[]):
 		new_dLL[alpha]=[]
@@ -156,34 +180,38 @@ def change_label(alpha,beta,pixInA,nodes,dLL,edge,newGraph):
 	for i in nodes:
 		node_label = newGraph.get_segment(i)
 		#Ind = nodes.where(i)
-		if (node_label):
+		if (node_label==1):
 			new_dLL[alpha].append(pixInA[i])
+			dDict[pixInA[i]] = alpha
 		else :
 			new_dLL[beta].append(pixInA[i])
+			dDict[pixInA[i]] = beta
 	#not sure if we need change edge relationship
 	return new_dLL
 
-def swap(dDict,dLL,edge,l1,r1,disInd):
+def swap(dDict,dLL,l1,r1,disInd):
 	counter=0
 	helper1=[x for x in range(disInd)]
 	helper2=permute(helper1)
 	print(helper2)
 	success=0
 	totalEnergy=0
-	w=[]
-	coe=15
+	finalL=[]
+	coe=5
 	for y in dLL:
-		totalEnergy+=energyTotal(y,l1,r1,dLL.index(y),edge,dDict,coe)
+		totalEnergy+=energyTotal(y,l1,r1,dLL.index(y),dDict,coe)
 	h,w = r1.shape
 	while (success == 0):
 		for x in helper2:
 			newEnergy=0
-			pixInA,newGraph,nodes=makeGraph(dDict,dLL,edge,x[0],x[1],r1,l1)
+			pixInA,newGraph,nodes=makeGraph(dDict,dLL,x[0],x[1],r1,l1)
+			print(len(dLL[0]),len(dLL[1]),len(dLL[2]),len(dLL[3]))
+			print(x)
 			print("new graph")
-			new_dLL=change_label(x[0],x[1],pixInA,nodes,dLL,edge,newGraph)
+			new_dLL=change_label(x[0],x[1],pixInA,nodes,dLL,newGraph,dDict)
 			print("label change")
 			for z in new_dLL:
-				newEnergy+=energyTotal(z,l1,r1,new_dLL.index(z),edge,dDict,coe)
+				newEnergy+=energyTotal(z,l1,r1,new_dLL.index(z),dDict,coe)
 			if (newEnergy < totalEnergy):
 				print("new min energy",totalEnergy,newEnergy)
 				totalEnergy=newEnergy
@@ -191,18 +219,18 @@ def swap(dDict,dLL,edge,l1,r1,disInd):
 				success=1
 		if  (success == 1):
 			success = 0
-			w.append(dLL)
+			finalL.append(dLL)
 			print(time.time())
 		else:
-			return dLL,w
+			return dLL,finalL
 
 def main():
 	left_image = imageProcess('image_left.png')
 	right_image = imageProcess('image_right.png')
 	disInd = 4
-	initial= initState(left_image[0],right_image[0],disInd)
+	initial= initState(left_image,right_image,disInd)
 	print("init")
-	A,B=swap(initial[1],initial[0],left_image[1],left_image[0],right_image[0],disInd)
+	A,B=swap(initial[1],initial[0],left_image,right_image,disInd)
 
 	# show disparity image
 	# dis_im = np.uint8(np.zeros((right_image[0].shape[0],right_image[0].shape[1]),dtype = int))
