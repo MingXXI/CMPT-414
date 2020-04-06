@@ -20,7 +20,7 @@ def imageProcess(file):
 	data=np.array(im2,dtype='int')
 	# new_data=np.reshape(data,(height,width))
 	# use directory store neighbors of each vertex
-
+	return data
 
 #	imEdge = {}
 #	imEdge[(0,0)]=[[1,0],[0,1]]
@@ -39,25 +39,6 @@ def imageProcess(file):
 #	for i in range(height-2):
 #		for j in range(width-2):
 #			imEdge[(i+1,j+1)]=[[i+1,j],[i,j+1],[i+1,j+2],[i+2,j+1]]
-	return data
-
-
-
-	#origin
-	# imEdge[(width-1,height-1)]=[[width-2,height-1],[width-1,height-2]]
-	# imEdge[(0,height-1)]=[[1,height-1],[0,height-2]]
-	# imEdge[(width-1,0)]=[[width-1,1],[width-1-2,0]]
-	# ###
-	# for i in range(height-2):
-	# 	imEdge[(0,i+1)]=[[0,i],[0,i+2],[1,i+1]]
-	# 	imEdge[(width-1,i+1)]=[[width-1,i],[width-1,i+2],[width-2,i+1]]
-	# for j in range(width-2):
-	# 	imEdge[(j+1,0)]=[[j,0],[j+2,0],[j+1,1]]
-	# 	imEdge[(j+1,height-1)]=[[j,height-1],[j+2,height-1],[j+1,height-2]]
-	# for i in range(height-2):
-	# 	for j in range(width-2):
-	# 		imEdge[(i+1,j+1)]=[[i,j+1],[i+1,j],[i+2,j+1],[i+1,j+2]]
-	# return data,imEdge
 
 #dD: dis dictionary
 #disList: dis List
@@ -91,6 +72,8 @@ def energySmoothness(x,y,r1,dDict):
 	if(y>=1):
 		totalcount+=np.absolute(A-dDict[(x,y-1)])
 	return totalcount
+
+#need all neighbor's energy to decide the energy of s-e-t
 def energysmooth(x,y,r1,dDict):
 	energeycount=0
 	h,w=r1.shape
@@ -164,8 +147,8 @@ def makeGraph(dDict,dLL,alpha,beta,r1,l1):
 				neighbor1 = pixInA.index((i[0],i[1]+1))
 				eE1=edgeEnergy(dDict,i[0],i[1],i[0],i[1]+1,r1)
 				newGraph.add_edge(nodes[iInd],nodes[neighbor1],eE1,eE1)
-		sC= 5*energySmoothness(i[0],i[1],r1,dDict) + energyData(i[0],i[1],alpha,l1,r1)*10
-		tC= 5*energySmoothness(i[0],i[1],r1,dDict) + energyData(i[0],i[1],beta,l1,r1)*10
+		sC= 5*energysmooth(i[0],i[1],r1,dDict) + energyData(i[0],i[1],alpha,l1,r1)
+		tC= 5*energysmooth(i[0],i[1],r1,dDict) + energyData(i[0],i[1],beta,l1,r1)
 		newGraph.add_tedge(nodes[iInd],sC,tC)
 	return pixInA,newGraph,nodes
 
