@@ -270,7 +270,7 @@ def swap(dDict,dLL,l1,r1,disInd):
 			success = 0
 			# finalL.append(dLL)
 		else:
-			return
+			return dis_image
 
 def main():
 	left_image = imageProcess('scene1.row3.col1.ppm')
@@ -284,7 +284,11 @@ def main():
 
 	initial= initState(left_image,right_image,disInd)
 	print("Initial State Done!\n Now Swap")
-	swap(initial[1],initial[0],left_image,right_image,disInd)
+	result_image = swap(initial[1],initial[0],left_image,right_image,disInd)
+
+	result_median_image = cv2.medianBlur(result_image,3)
+	cv2.imwrite('Final Result with Median Filter.png',result_median_image)
+
 
 
 
