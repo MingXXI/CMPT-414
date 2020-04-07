@@ -20,6 +20,9 @@ def imageProcess(file):
 	data=np.array(im2,dtype='int')
 	# new_data=np.reshape(data,(height,width))
 	# use directory store neighbors of each vertex
+	del im
+	del im2
+
 	return data
 
 #	imEdge = {}
@@ -55,8 +58,7 @@ def energyTotal(disList,l1,r1,label,dDict,coe):
 	return total
 def energyData(x,y,label,l1,r1):
 	h,w=l1.shape
-	#print(h,w)
-	# print('h = ',h)
+
 	if (y+label+1>=w):
 		# deal with boundary of the image. some pixel in right omage do not appear in left image
 		return min(np.absolute(r1[x][y]-l1[x][y-label-1]),20)
@@ -74,6 +76,7 @@ def energySmoothness(x,y,r1,dDict):
 	if(y>=1):
 		beta=dDict[x][y-1]
 		totalcount+=((alpha-beta)!=0)*(0.3*(np.absolute(r1[x][y]-r1[x][y-1])>10)+20*(np.absolute(r1[x][y]-r1[x][y-1])<10))
+	
 	return totalcount
 
 #need all neighbor's energy to decide the energy of s-e-t
@@ -95,6 +98,8 @@ def energysmooth(x,y,r1,dDict):
 		beta=dDict[x][y+1]
 		energeycount+=((alpha-beta)!=0)*(0.3*(np.absolute(r1[x][y]-r1[x][y+1])>10)+20*(np.absolute(r1[x][y]-r1[x][y+1])<10))
 
+	del alpha 
+	
 	return energeycount
 
 
@@ -117,7 +122,6 @@ def initState(l1,r1,disInd):
 			M=10000000
 			for d in range(disInd):
 				A=energyData(i,j,d,l1,r1)
-				# print("A is ", A)
 				if(A<M):
 					M=A
 					hd=d
@@ -134,8 +138,9 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
 # create new graph with vertex in alpha and beta 
 # giving energy and cap where cap=energy
 ###change
-	print(len(dLL1))
-	print(len(dLL1)+len(dLL2))
+
+	print('current length of alpha is:', len(dLL1))
+	print('Current total length is', len(dLL1)+len(dLL2))
 	numOfPix=len(dLL1)+len(dLL2)
 	newGraph = maxflow.Graph[float](numOfPix,4*numOfPix)
 	h,w=r1.shape
@@ -156,17 +161,23 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
 		else :
 			x,y=dLL2[i-len(dLL1)]
 
-		if ((x+1)<h):
+		if ((x+1)<h and (((x+1,y) in dLL1) or ((x+1,y) in dLL2))):
 			neighbor = helpDict.get((x+1,y))
 			eE=edgeEnergy(dDict,x,y,x+1,y,r1)
 			newGraph.add_edge(nodes[i],nodes[neighbor],eE,eE)
-		if ((y+1)<w):
+		if ((y+1)<w and (((x,y+1) in dLL1) or ((x,y+1) in dLL2))):
 			neighbor1 = helpDict.get((x,y+1))
 			eE1=edgeEnergy(dDict,x,y,x,y+1,r1)
 			newGraph.add_edge(nodes[i],nodes[neighbor1],eE1,eE1)
 		sC= 5*energysmooth(x,y,r1,dDict) + energyData(x,y,alpha,l1,r1)
 		tC= 5*energysmooth(x,y,r1,dDict) + energyData(x,y,beta,l1,r1)
 		newGraph.add_tedge(nodes[i],sC,tC)
+	
+	del helpDict
+	del numOfPix
+	del h
+	del w
+
 	return newGraph,nodes
 
 def change_label(alpha,beta,nodes,dLL,newGraph,dDict):
@@ -195,6 +206,10 @@ def change_label(alpha,beta,nodes,dLL,newGraph,dDict):
 			else:
 				new_dLL[beta].append(dLL[beta][i-A])
 				dDict[dLL[beta][i-A]] = beta
+
+	del flow
+	del A
+
 	#not sure if we need change edge relationship
 	return new_dLL
 
@@ -213,10 +228,17 @@ def swap(dDict,dLL,l1,r1,disInd):
 	while (success == 0):
 		for x in helper2:
 			newEnergy=0
+			print('Before makeGraph, dLL is')
+			for i in range (len(dLL)):
+				print(len(dLL[i]),'\t', end = '')
+			print('\n')
 			newGraph,nodes=makeGraph(dDict,dLL[x[0]],dLL[x[1]],x[0],x[1],r1,l1)
-			print(len(dLL[0]),len(dLL[1]),len(dLL[2]),len(dLL[3]))
-			print(x)
-			print("new graph")
+			print('After makeGraph, dLL is')
+			for i in range (len(dLL)):
+				print(len(dLL[i]),'\t', end = '')
+			print('\n')
+
+			print('current alpha-beta is:',x)
 			new_dLL=change_label(x[0],x[1],nodes,dLL,newGraph,dDict)
 			print("label change")
 			for z in range(len(new_dLL)):
@@ -226,6 +248,12 @@ def swap(dDict,dLL,l1,r1,disInd):
 				totalEnergy=newEnergy
 				dLL=new_dLL.copy()
 				success=1
+
+			del newGraph
+			del nodes
+			del new_dLL
+
+
 		if  (success == 1):
 			success = 0
 			finalL.append(dLL)
@@ -236,11 +264,23 @@ def swap(dDict,dLL,l1,r1,disInd):
 def main():
 	left_image = imageProcess('scene1.row3.col1.ppm')
 	right_image = imageProcess('scene1.row3.col2.ppm')
-	disInd = 4
+
+	dis_image = np.zeros(right_image.shape,dtype = int)
+	cv2.imwrite('Initial.png',dis_image)
+	disInd = 14
+
+	step = np.floor(255/disInd)
+
 	initial= initState(left_image,right_image,disInd)
-	print("init")
+	print("Initial State Done!\n Now Swap")
 	A,B=swap(initial[1],initial[0],left_image,right_image,disInd)
 
+	current_dis = 0
+	for i in A:
+		for j in i:
+			dis_image[j] = current_dis*step
+		current_dis += 1
+	cv2.imwrite('Done.png',dis_image)
 	# show disparity image
 	# dis_im = np.uint8(np.zeros((right_image[0].shape[0],right_image[0].shape[1]),dtype = int))
 	# # dis_im = np.zeros((right_image[0].shape[0],right_image[0].shape[1]),dtype = int)
