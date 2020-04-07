@@ -172,7 +172,7 @@ def change_label(alpha,beta,nodes,dLL,newGraph,dDict):
 	flow=newGraph.maxflow()
 	new_dLL=dLL.copy()
 	A=len(dLL[alpha])
-	if (dLL[alpha]!=[] and dLL[beta]!=[]):
+	if (dLL[alpha]!=[] or dLL[beta]!=[]):
 		new_dLL[alpha]=[]
 		new_dLL[beta]=[]
 	else:
