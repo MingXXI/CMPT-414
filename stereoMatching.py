@@ -106,14 +106,7 @@ def energysmooth(x,y,r1,dDict):
 
 
 def edgeEnergy(alpha,beta,int1,int2):
-	intensity_difference = abs(int1-int2)
-	if(alpha!=beta):
-		if(intensity_difference>=5):
-			energy = 20
-		else:
-			energy = 40
-	else:
-		energy = 0
+	energy = ((alpha-beta)!=0)*(0.3*(np.absolute(int1-int2)>10)+20*(np.absolute(int1-int2)<10))
 	return energy
 
 
