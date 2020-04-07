@@ -106,14 +106,7 @@ def energysmooth(x,y,r1,dDict):
 
 
 def edgeEnergy(alpha,beta,int1,int2):
-	intensity_difference = abs(int1-int2)
-	if(alpha!=beta):
-		if(intensity_difference>=5):
-			energy = 20
-		else:
-			energy = 40
-	else:
-		energy = 0
+	energy = ((alpha-beta)!=0)*(0.3*(np.absolute(int1-int2)>10)+20*(np.absolute(int1-int2)<10))
 	return energy
 
 
@@ -244,9 +237,26 @@ def swap(dDict,dLL,l1,r1,disInd):
 		for x in helper2:
 			newEnergy=0
 			newGraph,nodes=makeGraph(dDict,dLL[x[0]],dLL[x[1]],x[0],x[1],r1,l1)
-
 			print('Current alpha-beta is:',x)
 			new_dLL=change_label(x[0],x[1],nodes,dLL,newGraph,dDict)
+			print('Before makeGraph, dLL is')
+			for i in range (len(dLL)):
+				print(len(dLL[i]),'\t', end = '')
+			print('\n')
+			testSpeed=time.time()
+			newGraph,nodes=makeGraph(dDict,dLL[x[0]],dLL[x[1]],x[0],x[1],r1,l1)
+			print("make graph time:%f"%(time.time()-testSpeed))
+			print('After makeGraph, dLL is')
+			for i in range (len(dLL)):
+				print(len(dLL[i]),'\t', end = '')
+			print('\n')
+
+			print('current alpha-beta is:',x)
+			testSpeed=time.time()
+			new_dLL=change_label(x[0],x[1],nodes,dLL,newGraph,dDict)
+			print("change label time:%f"%(time.time()-testSpeed))
+			print("label change")
+			testSpeed=time.time()
 			for z in range(len(new_dLL)):
 				newEnergy+=energyTotal(new_dLL[z],l1,r1,z,dDict,coe)
 			if (newEnergy < totalEnergy):
@@ -254,7 +264,7 @@ def swap(dDict,dLL,l1,r1,disInd):
 				totalEnergy=newEnergy
 				dLL=new_dLL.copy()
 				success=1
-
+			print("check energy time:%f"%(time.time()-testSpeed))
 			del newGraph
 			del nodes
 			del new_dLL
