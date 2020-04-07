@@ -214,6 +214,7 @@ def change_label(alpha,beta,nodes,dLL,newGraph,dDict):
 	return new_dLL
 
 def swap(dDict,dLL,l1,r1,disInd):
+	testSpeed=time.time()
 	counter=0
 	helper1=[x for x in range(disInd)]
 	helper2=permute(helper1)
@@ -225,6 +226,7 @@ def swap(dDict,dLL,l1,r1,disInd):
 	for y in range(len(dLL)):
 		totalEnergy+=energyTotal(dLL[y],l1,r1,y,dDict,coe)
 	h,w = r1.shape
+	print("time %f" % time.time()-testSpeed)
 	while (success == 0):
 		for x in helper2:
 			newEnergy=0
@@ -233,6 +235,7 @@ def swap(dDict,dLL,l1,r1,disInd):
 				print(len(dLL[i]),'\t', end = '')
 			print('\n')
 			newGraph,nodes=makeGraph(dDict,dLL[x[0]],dLL[x[1]],x[0],x[1],r1,l1)
+			print("time %f" % time.time()-testSpeed)
 			print('After makeGraph, dLL is')
 			for i in range (len(dLL)):
 				print(len(dLL[i]),'\t', end = '')
@@ -241,6 +244,7 @@ def swap(dDict,dLL,l1,r1,disInd):
 			print('current alpha-beta is:',x)
 			new_dLL=change_label(x[0],x[1],nodes,dLL,newGraph,dDict)
 			print("label change")
+			print("time %f" % time.time()-testSpeed)
 			for z in range(len(new_dLL)):
 				newEnergy+=energyTotal(new_dLL[z],l1,r1,z,dDict,coe)
 			if (newEnergy < totalEnergy):
