@@ -134,23 +134,27 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
 # create new graph with vertex in alpha and beta 
 # giving energy and cap where cap=energy
 ###change
-	pixInA=dLL1.copy()
-	print(len(pixInA))
-	pixInB=dLL2.copy()
-	pixInA.extend(pixInB)
-	print(len(pixInA))
-	numOfPix=len(pixInA)
+	print(len(dLL1))
+	print(len(dLL1)+len(dLL2))
+	numOfPix=len(dLL1)+len(dLL2)
 	newGraph = maxflow.Graph[float](numOfPix,4*numOfPix)
 	h,w=r1.shape
 	#first para is num of nodes, Second para is num of Edges not accurate number
 	nodes=newGraph.add_nodes(numOfPix)
 	# return identifiers of node added
 	helpDict={}
-	for i in range(len(pixInA)):
-		helpDict.update({pixInA[i]:i})
-
+	for i in range(len(dLL1)):
+		helpDict.update({dLL1[i]:i})
+	for i in range(len(dLL2)):
+		A=i+len(dLL1)
+		helpDict.update({dLL2[i]:A})
+	
 	for i in range(numOfPix):
-		x,y=pixInA[i]
+		if (i<len(dLL1)):
+			x,y=dLL1[i]
+		else :
+			x,y=dLL2[i-len(dLL2)]
+
 		if ((x+1)<h):
 			neighbor = helpDict.get((x+1,y))
 			eE=edgeEnergy(dDict,x,y,x+1,y,r1)
@@ -162,12 +166,13 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
 		sC= 5*energysmooth(x,y,r1,dDict) + energyData(x,y,alpha,l1,r1)
 		tC= 5*energysmooth(x,y,r1,dDict) + energyData(x,y,beta,l1,r1)
 		newGraph.add_tedge(nodes[i],sC,tC)
-	return pixInA,newGraph,nodes
+	return newGraph,nodes
 
-def change_label(alpha,beta,pixInA,nodes,dLL,newGraph,dDict):
+def change_label(alpha,beta,nodes,dLL,newGraph,dDict):
 	flow=newGraph.maxflow()
 	new_dLL=dLL.copy()
-	if (pixInA!=[]):
+	A=len(dLL[alpha])
+	if (dLL[alpha]!=[] and dLL[beta]!=[]):
 		new_dLL[alpha]=[]
 		new_dLL[beta]=[]
 	else:
@@ -176,11 +181,19 @@ def change_label(alpha,beta,pixInA,nodes,dLL,newGraph,dDict):
 		node_label = newGraph.get_segment(i)
 		#Ind = nodes.where(i)
 		if (node_label==1):
-			new_dLL[alpha].append(pixInA[i])
-			dDict[pixInA[i]] = alpha
+			if (i<len(dLL[alpha])):
+				new_dLL[alpha].append(dLL[alpha][i])
+				dDict[dLL[alpha][i]] = alpha
+			else:
+				new_dLL[alpha].append(dLL[beta][i-A])
+				dDict[dLL[beta][i-A]] = alpha
 		else :
-			new_dLL[beta].append(pixInA[i])
-			dDict[pixInA[i]] = beta
+			if (i<len(dLL[alpha])):
+				new_dLL[beta].append(dLL[alpha][i])
+				dDict[dLL[alpha][i]] = beta
+			else:
+				new_dLL[beta].append(dLL[beta][i-A])
+				dDict[dLL[beta][i-A]] = beta
 	#not sure if we need change edge relationship
 	return new_dLL
 
@@ -199,11 +212,11 @@ def swap(dDict,dLL,l1,r1,disInd):
 	while (success == 0):
 		for x in helper2:
 			newEnergy=0
-			pixInA,newGraph,nodes=makeGraph(dDict,dLL[x[0]],dLL[x[1]],x[0],x[1],r1,l1)
+			newGraph,nodes=makeGraph(dDict,dLL[x[0]],dLL[x[1]],x[0],x[1],r1,l1)
 			print(len(dLL[0]),len(dLL[1]),len(dLL[2]),len(dLL[3]))
 			print(x)
 			print("new graph")
-			new_dLL=change_label(x[0],x[1],pixInA,nodes,dLL,newGraph,dDict)
+			new_dLL=change_label(x[0],x[1],nodes,dLL,newGraph,dDict)
 			print("label change")
 			for z in range(len(new_dLL)):
 				newEnergy+=energyTotal(new_dLL[z],l1,r1,z,dDict,coe)
