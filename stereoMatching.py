@@ -121,8 +121,8 @@ def initState(l1,r1,disInd):
 				if(A<M):
 					M=A
 					hd=d
-			dLL[d].append((i,j))
-			dDict[i][j]=d
+			dLL[hd].append((i,j))
+			dDict[i][j]=hd
 
 	return dLL,dDict
 
@@ -146,8 +146,8 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
 	nodes=newGraph.add_nodes(numOfPix)
 	# return identifiers of node added
 	helpDict={}
-	for i in pixInA:
-		helpDict[pixInA[i]]=i
+	for i in range(pixInA):
+		helpDict.update({pixInA[i]:i})
 
 	for i in range(numOfPix):
 		x,y=pixInA[i]
