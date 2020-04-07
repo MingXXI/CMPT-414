@@ -111,18 +111,18 @@ def initState(l1,r1,disInd):
 	h,w=r1.shape
 	dDict=np.zeros((h,w),dtype=int)
 	#sadasd
+	hd=0
 	for i in range(h):
 		for j in range(w):
-			helperList=[]
+			M=10000000
 			for d in range(disInd):
 				A=energyData(i,j,d,l1,r1)
 				# print("A is ", A)
-				helperList.append(A)
-			# print(helperList)
-			list_min = min(helperList)
-			helper1=helperList.index(list_min)
-			dLL[helper1].append((i,j))
-			dDict[i][j]=helper1
+				if(A<M):
+					M=A
+					hd=d
+			dLL[d].append((i,j))
+			dDict[i][j]=d
 
 	return dLL,dDict
 
@@ -145,16 +145,20 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
 	#first para is num of nodes, Second para is num of Edges not accurate number
 	nodes=newGraph.add_nodes(numOfPix)
 	# return identifiers of node added
+	helpDict={}
+	for i in range(pixInA):
+		helpDict[pixInA[i]]=i
+
 	for i in range(numOfPix):
 		x,y=pixInA[i]
 		if(x>=0):
 			if ((x+1)<h and (x+1,y) in pixInA):
-				neighbor = pixInA.index((i[0]+1,i[1]))
+				neighbor = helpDict.get((x+1,y))
 				eE=edgeEnergy(dDict,x,y,x+1,y,r1)
 				newGraph.add_edge(nodes[i],nodes[neighbor],eE,eE)
 		if(y>=0):
 			if ((y+1)<w and (x,y+1) in pixInA):
-				neighbor1 = pixInA.index((i[0],i[1]+1))
+				neighbor1 = helpDict.get((x,y+1))
 				eE1=edgeEnergy(dDict,x,y,x,y+1,r1)
 				newGraph.add_edge(nodes[i],nodes[neighbor1],eE1,eE1)
 		sC= 5*energysmooth(x,y,r1,dDict) + energyData(x,y,alpha,l1,r1)
