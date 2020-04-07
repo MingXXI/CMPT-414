@@ -65,26 +65,35 @@ def energyData(x,y,label,l1,r1):
 		return min(np.absolute(r1[x][y]-l1[x][y+label+1]),20)
 def energySmoothness(x,y,r1,dDict):
 	totalcount=0
-	A=dDict[(x,y)] 
+	alpha = dDict[x][y]
 	h,w=r1.shape
+	beta=0
 	if(x>=1):
-		totalcount+=np.absolute(A-dDict[(x-1,y)])
+		beta=dDict[x-1][y]
+		totalcount+=((alpha-beta)!=0)*(0.3*(np.absolute(r1[x][y]-r1[x-1][y])>10)+20*(np.absolute(r1[x][y]-r1[x-1][y])<10))
 	if(y>=1):
-		totalcount+=np.absolute(A-dDict[(x,y-1)])
+		beta=dDict[x][y-1]
+		totalcount+=((alpha-beta)!=0)*(0.3*(np.absolute(r1[x][y]-r1[x][y-1])>10)+20*(np.absolute(r1[x][y]-r1[x][y-1])<10))
 	return totalcount
 
 #need all neighbor's energy to decide the energy of s-e-t
 def energysmooth(x,y,r1,dDict):
 	energeycount=0
 	h,w=r1.shape
-	if(x>=1):
-		energeycount+=abs(dDict[(x,y)]-dDict[(x-1,y)])
-	if(y>=1):
-		energeycount+=abs(dDict[(x,y)]-dDict[(x,y-1)])
-	if(x<=h-2):
-		energeycount+=abs(dDict[(x,y)]-dDict[(x+1,y)])
-	if(y<=w-2):
-		energeycount+=abs(dDict[(x,y)]-dDict[(x,y+1)])
+	alpha=dDict[x][y]
+	beta=0
+	if(x>=1 and dDict[x-1][y]!=alpha and dDict[x-1][y]!=beta):
+		beta=dDict[x-1][y]
+		energeycount+=((alpha-beta)!=0)*(0.3*(np.absolute(r1[x][y]-r1[x-1][y])>10)+20*(np.absolute(r1[x][y]-r1[x-1][y])<10))
+	if(y>=1 and dDict[x][y-1]!=alpha and dDict[x][y-1]!=beta):
+		beta=dDict[x][y-1]
+		energeycount+=((alpha-beta)!=0)*(0.3*(np.absolute(r1[x][y]-r1[x][y-1])>10)+20*(np.absolute(r1[x][y]-r1[x][y-1])<10))
+	if(x<=h-2 and dDict[x+1][y]!=alpha and dDict[x+1][y]!=beta):
+		beta=dDict[x+1][y]
+		energeycount+=((alpha-beta)!=0)*(0.3*(np.absolute(r1[x][y]-r1[x+1][y])>10)+20*(np.absolute(r1[x][y]-r1[x+1][y])<10))
+	if(y<=w-2 and dDict[x][y+1]!=alpha and dDict[x][y+1]!=beta):
+		beta=dDict[x][y+1]
+		energeycount+=((alpha-beta)!=0)*(0.3*(np.absolute(r1[x][y]-r1[x][y+1])>10)+20*(np.absolute(r1[x][y]-r1[x][y+1])<10))
 
 	return energeycount
 
@@ -92,15 +101,15 @@ def energysmooth(x,y,r1,dDict):
 
 
 def edgeEnergy(dDict,x1,y1,x2,y2,r1):
-	alpha = dDict[(x1,y1)]
-	beta = dDict[(x2,y2)]
+	alpha = dDict[x1][y1]
+	beta = dDict[x2][y2]
 	count=((alpha-beta)!=0)*(0.3*(np.absolute(r1[x1][y1]-r1[x2][y2])>10)+20*(np.absolute(r1[x1][y1]-r1[x2][y2])<10))
 	return count
 
 def initState(l1,r1,disInd):
 	dLL = [[] for x in range(disInd)]
 	h,w=r1.shape
-	dDict={}
+	dDict=np.zeros((h,w),dtype=int)
 	#sadasd
 	for i in range(h):
 		for j in range(w):
@@ -113,7 +122,7 @@ def initState(l1,r1,disInd):
 			list_min = min(helperList)
 			helper1=helperList.index(list_min)
 			dLL[helper1].append((i,j))
-			dDict[(i,j)]=helper1
+			dDict[i][j]=helper1
 
 	return dLL,dDict
 
@@ -132,18 +141,19 @@ def makeGraph(dDict,dLL,alpha,beta,r1,l1):
 	print(len(pixInA))
 	numOfPix=len(pixInA)
 	newGraph = maxflow.Graph[float](numOfPix,4*numOfPix)
+	h,w=r1.shape
 	#first para is num of nodes, Second para is num of Edges not accurate number
 	nodes=newGraph.add_nodes(numOfPix)
 	# return identifiers of node added
 	for i in pixInA:
 		iInd=pixInA.index(i)
 		if(i[0]>=0):
-			if ((i[0]+1,i[1]) in dDict.keys() and (i[0]+1,i[1]) in  pixInA):
+			if ((i[0]+1)<h and (i[0]+1,i[1]) in  pixInA):
 				neighbor = pixInA.index((i[0]+1,i[1]))
 				eE=edgeEnergy(dDict,i[0],i[1],i[0]+1,i[1],r1)
 				newGraph.add_edge(nodes[iInd],nodes[neighbor],eE,eE)
 		if(i[1]>=0):
-			if ((i[0],i[1]+1) in dDict.keys() and (i[0],i[1]+1) in pixInA):
+			if ((i[1]+1)<w and (i[0],i[1]+1) in pixInA):
 				neighbor1 = pixInA.index((i[0],i[1]+1))
 				eE1=edgeEnergy(dDict,i[0],i[1],i[0],i[1]+1,r1)
 				newGraph.add_edge(nodes[iInd],nodes[neighbor1],eE1,eE1)
