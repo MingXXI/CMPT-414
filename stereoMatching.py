@@ -143,11 +143,12 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
 	nodes=newGraph.add_nodes(numOfPix)
 	# return identifiers of node added
 	helpDict={}
-	for i in range(len(dLL1)):
-		helpDict.update({dLL1[i]:i})
-	for i in range(len(dLL2)):
-		A=i+len(dLL1)
-		helpDict.update({dLL2[i]:A})
+	for i in range(numOfPix):
+		if (i<len(dLL1)):
+			helpDict.update({dLL1[i]:i})
+		else:
+			A=i-len(dLL1)
+			helpDict.update({dLL2[A]:i})
 	
 	for i in range(numOfPix):
 		if (i<len(dLL1)):
