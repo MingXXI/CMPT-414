@@ -146,7 +146,7 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
 	nodes=newGraph.add_nodes(numOfPix)
 	# return identifiers of node added
 	helpDict={}
-	for i in range(pixInA):
+	for i in range(len(pixInA)):
 		helpDict.update({pixInA[i]:i})
 
 	for i in range(numOfPix):
