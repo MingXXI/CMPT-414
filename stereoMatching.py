@@ -105,11 +105,22 @@ def energysmooth(x,y,r1,dDict):
 
 
 
-def edgeEnergy(dDict,x1,y1,x2,y2,r1):
-	alpha = dDict[x1][y1]
-	beta = dDict[x2][y2]
-	count=((alpha-beta)!=0)*(0.3*(np.absolute(r1[x1][y1]-r1[x2][y2])>10)+20*(np.absolute(r1[x1][y1]-r1[x2][y2])<10))
-	return count
+def edgeEnergy(alpha,beta,int1,int2):
+	intensity_difference = abs(int1-int2)
+	if(alpha!=beta):
+		if(intensity_difference>=5):
+			energy = 20
+		else:
+			energy = 40
+	else:
+		energy = 0
+	return energy
+
+
+	# alpha = dDict[x1][y1]
+	# beta = dDict[x2][y2]
+	# count=((alpha-beta)!=0)*(0.3*(np.absolute(r1[x1][y1]-r1[x2][y2])>10)+20*(np.absolute(r1[x1][y1]-r1[x2][y2])<10))
+	# return count
 
 def initState(l1,r1,disInd):
 	dLL = [[] for x in range(disInd)]
@@ -138,7 +149,6 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
 # create new graph with vertex in alpha and beta 
 # giving energy and cap where cap=energy
 ###change
-	testSpeed=time.time()
 	print('Current length of alpha is:', len(dLL1))
 	print('Current total length is', len(dLL1)+len(dLL2))
 	numOfPix=len(dLL1)+len(dLL2)
@@ -148,34 +158,34 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
 	nodes=newGraph.add_nodes(numOfPix)
 	# return identifiers of node added
 	helpDict={}
+
 	for i in range(numOfPix):
 		if (i<len(dLL1)):
 			helpDict.update({dLL1[i]:i})
 		else:
 			A=i-len(dLL1)
 			helpDict.update({dLL2[A]:i})
-	print("create dict time:%f" %(time.time()-testSpeed))
 	for i in range(numOfPix):
-		testSpeed=time.time()
 		if (i<len(dLL1)):
 			x,y=dLL1[i]
 		else :
 			x,y=dLL2[i-len(dLL1)]
-
-		if ((x+1)<h and (((x+1,y) in dLL1) or ((x+1,y) in dLL2))):
+			
+		if ((x+1)<h ):
 			neighbor = helpDict.get((x+1,y))
-			eE=edgeEnergy(dDict,x,y,x+1,y,r1)
-			newGraph.add_edge(nodes[i],nodes[neighbor],eE,eE)
-		if ((y+1)<w and (((x,y+1) in dLL1) or ((x,y+1) in dLL2))):
+			if (neighbor != None):
+				eE=edgeEnergy(alpha, beta,r1[x][y],r1[x+1][y])
+				newGraph.add_edge(nodes[i],nodes[neighbor],eE,eE)
+			# and (((x,y+1) in dLL1) or ((x,y+1) in dLL2))
+		if ((y+1)<w ):
 			neighbor1 = helpDict.get((x,y+1))
-			eE1=edgeEnergy(dDict,x,y,x,y+1,r1)
-			newGraph.add_edge(nodes[i],nodes[neighbor1],eE1,eE1)
-		print("add edge time:%f" %(time.time()-testSpeed))
-		testSpeed=time.time()
+			if (neighbor1 != None):
+				eE1=edgeEnergy(alpha, beta,r1[x][y],r1[x][y+1])
+				newGraph.add_edge(nodes[i],nodes[neighbor1],eE1,eE1)
+
 		sC= 5*energysmooth(x,y,r1,dDict) + energyData(x,y,alpha,l1,r1)
 		tC= 5*energysmooth(x,y,r1,dDict) + energyData(x,y,beta,l1,r1)
 		newGraph.add_tedge(nodes[i],sC,tC)
-		print("one loop time:%f" %(time.time()-testSpeed))
 	del helpDict
 	del numOfPix
 	del h
@@ -260,7 +270,6 @@ def swap(dDict,dLL,l1,r1,disInd):
 		if  (success == 1):
 			success = 0
 			finalL.append(dLL)
-			print(time.time())
 		else:
 			return dLL,finalL
 
