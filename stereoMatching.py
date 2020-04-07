@@ -64,7 +64,7 @@ def energyData(x,y,label,l1,r1):
 		return min(np.absolute(r1[x][y]-l1[x][y-label-1]),20)
 	else:
 		
-		return min(np.absolute(r1[x][y]-l1[x][y+label+1]),20)
+		return min(np.absolute(r1[x][y]-l1[x][y+label+1]),20)**2
 def energySmoothness(x,y,r1,dDict):
 	totalcount=0
 	alpha = dDict[x][y]
@@ -87,16 +87,16 @@ def energysmooth(x,y,r1,dDict):
 	beta=0
 	if(x>=1 and dDict[x-1][y]!=alpha and dDict[x-1][y]!=beta):
 		beta=dDict[x-1][y]
-		energeycount+=((alpha-beta)!=0)*(0.3*(np.absolute(r1[x][y]-r1[x-1][y])>10)+20*(np.absolute(r1[x][y]-r1[x-1][y])<10))
+		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x-1][y])>=5)+40*(np.absolute(r1[x][y]-r1[x-1][y])<10))
 	if(y>=1 and dDict[x][y-1]!=alpha and dDict[x][y-1]!=beta):
 		beta=dDict[x][y-1]
-		energeycount+=((alpha-beta)!=0)*(0.3*(np.absolute(r1[x][y]-r1[x][y-1])>10)+20*(np.absolute(r1[x][y]-r1[x][y-1])<10))
+		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x][y-1])>=5)+40*(np.absolute(r1[x][y]-r1[x][y-1])<10))
 	if(x<=h-2 and dDict[x+1][y]!=alpha and dDict[x+1][y]!=beta):
 		beta=dDict[x+1][y]
-		energeycount+=((alpha-beta)!=0)*(0.3*(np.absolute(r1[x][y]-r1[x+1][y])>10)+20*(np.absolute(r1[x][y]-r1[x+1][y])<10))
+		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x+1][y])>=5)+40*(np.absolute(r1[x][y]-r1[x+1][y])<10))
 	if(y<=w-2 and dDict[x][y+1]!=alpha and dDict[x][y+1]!=beta):
 		beta=dDict[x][y+1]
-		energeycount+=((alpha-beta)!=0)*(0.3*(np.absolute(r1[x][y]-r1[x][y+1])>10)+20*(np.absolute(r1[x][y]-r1[x][y+1])<10))
+		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x][y+1])>=5)+40*(np.absolute(r1[x][y]-r1[x][y+1])<10))
 
 	del alpha 
 	
@@ -149,8 +149,6 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
 # create new graph with vertex in alpha and beta 
 # giving energy and cap where cap=energy
 ###change
-	print('Current length of alpha is:', len(dLL1))
-	print('Current total length is', len(dLL1)+len(dLL2))
 	numOfPix=len(dLL1)+len(dLL2)
 	newGraph = maxflow.Graph[float](numOfPix,4*numOfPix)
 	h,w=r1.shape
@@ -183,8 +181,8 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
 				eE1=edgeEnergy(alpha, beta,r1[x][y],r1[x][y+1])
 				newGraph.add_edge(nodes[i],nodes[neighbor1],eE1,eE1)
 
-		sC= 5*energysmooth(x,y,r1,dDict) + energyData(x,y,alpha,l1,r1)
-		tC= 5*energysmooth(x,y,r1,dDict) + energyData(x,y,beta,l1,r1)
+		sC= energysmooth(x,y,r1,dDict) + energyData(x,y,alpha,l1,r1)
+		tC= energysmooth(x,y,r1,dDict) + energyData(x,y,beta,l1,r1)
 		newGraph.add_tedge(nodes[i],sC,tC)
 	del helpDict
 	del numOfPix
@@ -227,37 +225,32 @@ def change_label(alpha,beta,nodes,dLL,newGraph,dDict):
 	return new_dLL
 
 def swap(dDict,dLL,l1,r1,disInd):
-	counter=0
-	helper1=[x for x in range(disInd)]
-	helper2=permute(helper1)
+	counter = 0
+	helper1 = [x for x in range(disInd)]
+	dis_image = np.zeros(r1.shape,dtype = int)
+	helper2 = permute(helper1)
+	step = np.floor(255/disInd)
 	print(helper2)
-	success=0
-	totalEnergy=0
-	finalL=[]
+	success = 0
+	totalEnergy = 0
+	iteration = 1
+	# finalL=[]
 	coe=5
 	for y in range(len(dLL)):
 		totalEnergy+=energyTotal(dLL[y],l1,r1,y,dDict,coe)
 	h,w = r1.shape
 	while (success == 0):
+		print('Iteration:', iteration, 'Starts!!!')
 		for x in helper2:
 			newEnergy=0
-			print('Before makeGraph, dLL is')
-			for i in range (len(dLL)):
-				print(len(dLL[i]),'\t', end = '')
-			print('\n')
 			newGraph,nodes=makeGraph(dDict,dLL[x[0]],dLL[x[1]],x[0],x[1],r1,l1)
-			print('After makeGraph, dLL is')
-			for i in range (len(dLL)):
-				print(len(dLL[i]),'\t', end = '')
-			print('\n')
 
-			print('current alpha-beta is:',x)
+			print('Current alpha-beta is:',x)
 			new_dLL=change_label(x[0],x[1],nodes,dLL,newGraph,dDict)
-			print("label change")
 			for z in range(len(new_dLL)):
 				newEnergy+=energyTotal(new_dLL[z],l1,r1,z,dDict,coe)
 			if (newEnergy < totalEnergy):
-				print("new min energy",totalEnergy,newEnergy)
+				print("New Min Energy Found\n",totalEnergy,newEnergy)
 				totalEnergy=newEnergy
 				dLL=new_dLL.copy()
 				success=1
@@ -265,44 +258,39 @@ def swap(dDict,dLL,l1,r1,disInd):
 			del newGraph
 			del nodes
 			del new_dLL
+		current_dis = 0
+		for i in dLL:
+			for j in i:
+				dis_image[j] = current_dis*step
+			current_dis += 1
+		print('Iteration ',iteration,' Done')
+		print('Now Saving Results')
+		cv2.imwrite('Result_Iteration'+str(iteration)+'.png',dis_image)
+		print('Saving Done!','\n Preparing for Next Iteration\n.\n.\n.')
+		iteration += 1
+
 
 
 		if  (success == 1):
 			success = 0
-			finalL.append(dLL)
+			# finalL.append(dLL)
 		else:
-			return dLL,finalL
+			return
 
 def main():
 	left_image = imageProcess('scene1.row3.col1.ppm')
 	right_image = imageProcess('scene1.row3.col2.ppm')
 
-	dis_image = np.zeros(right_image.shape,dtype = int)
-	cv2.imwrite('Initial.png',dis_image)
-	disInd = 14
+	# dis_image = np.zeros(right_image.shape,dtype = int)
+	# cv2.imwrite('Initial.png',dis_image)
+	disInd = 15
 
-	step = np.floor(255/disInd)
+	# step = np.floor(255/disInd)
 
 	initial= initState(left_image,right_image,disInd)
 	print("Initial State Done!\n Now Swap")
-	A,B=swap(initial[1],initial[0],left_image,right_image,disInd)
+	swap(initial[1],initial[0],left_image,right_image,disInd)
 
-	current_dis = 0
-	for i in A:
-		for j in i:
-			dis_image[j] = current_dis*step
-		current_dis += 1
-	cv2.imwrite('Done.png',dis_image)
-	# show disparity image
-	# dis_im = np.uint8(np.zeros((right_image[0].shape[0],right_image[0].shape[1]),dtype = int))
-	# # dis_im = np.zeros((right_image[0].shape[0],right_image[0].shape[1]),dtype = int)
-	# dis_im += 255
-	# for i in range(disInd):
-	# 	for j in A[i]:
-	# 		dis_im[j[0]][j[1]] -=  i*50
-	
-	# cv2.imshow('test',dis_im)
-	# cv2. waitKey(10000)
 
 
 if __name__ =="__main__":
