@@ -151,16 +151,14 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
 
 	for i in range(numOfPix):
 		x,y=pixInA[i]
-		if(x>=0):
-			if ((x+1)<h and (x+1,y) in pixInA):
-				neighbor = helpDict.get((x+1,y))
-				eE=edgeEnergy(dDict,x,y,x+1,y,r1)
-				newGraph.add_edge(nodes[i],nodes[neighbor],eE,eE)
-		if(y>=0):
-			if ((y+1)<w and (x,y+1) in pixInA):
-				neighbor1 = helpDict.get((x,y+1))
-				eE1=edgeEnergy(dDict,x,y,x,y+1,r1)
-				newGraph.add_edge(nodes[i],nodes[neighbor1],eE1,eE1)
+		if ((x+1)<h):
+			neighbor = helpDict.get((x+1,y))
+			eE=edgeEnergy(dDict,x,y,x+1,y,r1)
+			newGraph.add_edge(nodes[i],nodes[neighbor],eE,eE)
+		if ((y+1)<w):
+			neighbor1 = helpDict.get((x,y+1))
+			eE1=edgeEnergy(dDict,x,y,x,y+1,r1)
+			newGraph.add_edge(nodes[i],nodes[neighbor1],eE1,eE1)
 		sC= 5*energysmooth(x,y,r1,dDict) + energyData(x,y,alpha,l1,r1)
 		tC= 5*energysmooth(x,y,r1,dDict) + energyData(x,y,beta,l1,r1)
 		newGraph.add_tedge(nodes[i],sC,tC)
