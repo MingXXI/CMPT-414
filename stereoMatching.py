@@ -139,7 +139,7 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
 # giving energy and cap where cap=energy
 ###change
 
-	print('current length of alpha is:', len(dLL1))
+	print('Current length of alpha is:', len(dLL1))
 	print('Current total length is', len(dLL1)+len(dLL2))
 	numOfPix=len(dLL1)+len(dLL2)
 	newGraph = maxflow.Graph[float](numOfPix,4*numOfPix)
@@ -226,25 +226,27 @@ def swap(dDict,dLL,l1,r1,disInd):
 	for y in range(len(dLL)):
 		totalEnergy+=energyTotal(dLL[y],l1,r1,y,dDict,coe)
 	h,w = r1.shape
-	print("time %f" % time.time()-testSpeed)
+	print("time %f" %(time.time()-testSpeed))
 	while (success == 0):
 		for x in helper2:
+			testSpeed=time.time()
 			newEnergy=0
 			print('Before makeGraph, dLL is')
 			for i in range (len(dLL)):
 				print(len(dLL[i]),'\t', end = '')
 			print('\n')
 			newGraph,nodes=makeGraph(dDict,dLL[x[0]],dLL[x[1]],x[0],x[1],r1,l1)
-			print("time %f" % time.time()-testSpeed)
+			print("makeGraph time %f" %(time.time()-testSpeed))
 			print('After makeGraph, dLL is')
 			for i in range (len(dLL)):
 				print(len(dLL[i]),'\t', end = '')
 			print('\n')
 
 			print('current alpha-beta is:',x)
+			testSpeed=time.time()
 			new_dLL=change_label(x[0],x[1],nodes,dLL,newGraph,dDict)
 			print("label change")
-			print("time %f" % time.time()-testSpeed)
+			print("change_label time %f" %(time.time()-testSpeed))
 			for z in range(len(new_dLL)):
 				newEnergy+=energyTotal(new_dLL[z],l1,r1,z,dDict,coe)
 			if (newEnergy < totalEnergy):
