@@ -153,7 +153,7 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
 		if (i<len(dLL1)):
 			x,y=dLL1[i]
 		else :
-			x,y=dLL2[i-len(dLL2)]
+			x,y=dLL2[i-len(dLL1)]
 
 		if ((x+1)<h):
 			neighbor = helpDict.get((x+1,y))
