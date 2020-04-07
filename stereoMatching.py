@@ -138,7 +138,7 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
 # create new graph with vertex in alpha and beta 
 # giving energy and cap where cap=energy
 ###change
-
+	testSpeed=time.time()
 	print('Current length of alpha is:', len(dLL1))
 	print('Current total length is', len(dLL1)+len(dLL2))
 	numOfPix=len(dLL1)+len(dLL2)
@@ -154,8 +154,9 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
 		else:
 			A=i-len(dLL1)
 			helpDict.update({dLL2[A]:i})
-	
+	print("create dict time:%f" %(time.time()-testSpeed))
 	for i in range(numOfPix):
+		testSpeed=time.time()
 		if (i<len(dLL1)):
 			x,y=dLL1[i]
 		else :
@@ -169,10 +170,12 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
 			neighbor1 = helpDict.get((x,y+1))
 			eE1=edgeEnergy(dDict,x,y,x,y+1,r1)
 			newGraph.add_edge(nodes[i],nodes[neighbor1],eE1,eE1)
+		print("add edge time:%f" %(time.time()-testSpeed))
+		testSpeed=time.time()
 		sC= 5*energysmooth(x,y,r1,dDict) + energyData(x,y,alpha,l1,r1)
 		tC= 5*energysmooth(x,y,r1,dDict) + energyData(x,y,beta,l1,r1)
 		newGraph.add_tedge(nodes[i],sC,tC)
-	
+		print("one loop time:%f" %(time.time()-testSpeed))
 	del helpDict
 	del numOfPix
 	del h
@@ -214,7 +217,6 @@ def change_label(alpha,beta,nodes,dLL,newGraph,dDict):
 	return new_dLL
 
 def swap(dDict,dLL,l1,r1,disInd):
-	testSpeed=time.time()
 	counter=0
 	helper1=[x for x in range(disInd)]
 	helper2=permute(helper1)
@@ -226,27 +228,22 @@ def swap(dDict,dLL,l1,r1,disInd):
 	for y in range(len(dLL)):
 		totalEnergy+=energyTotal(dLL[y],l1,r1,y,dDict,coe)
 	h,w = r1.shape
-	print("time %f" %(time.time()-testSpeed))
 	while (success == 0):
 		for x in helper2:
-			testSpeed=time.time()
 			newEnergy=0
 			print('Before makeGraph, dLL is')
 			for i in range (len(dLL)):
 				print(len(dLL[i]),'\t', end = '')
 			print('\n')
 			newGraph,nodes=makeGraph(dDict,dLL[x[0]],dLL[x[1]],x[0],x[1],r1,l1)
-			print("makeGraph time %f" %(time.time()-testSpeed))
 			print('After makeGraph, dLL is')
 			for i in range (len(dLL)):
 				print(len(dLL[i]),'\t', end = '')
 			print('\n')
 
 			print('current alpha-beta is:',x)
-			testSpeed=time.time()
 			new_dLL=change_label(x[0],x[1],nodes,dLL,newGraph,dDict)
 			print("label change")
-			print("change_label time %f" %(time.time()-testSpeed))
 			for z in range(len(new_dLL)):
 				newEnergy+=energyTotal(new_dLL[z],l1,r1,z,dDict,coe)
 			if (newEnergy < totalEnergy):
