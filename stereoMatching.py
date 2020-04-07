@@ -61,7 +61,7 @@ def energyData(x,y,label,l1,r1):
 
 	if (y+label+1>=w):
 		# deal with boundary of the image. some pixel in right omage do not appear in left image
-		return min(np.absolute(r1[x][y]-l1[x][y-label-1]),20)
+		return min(np.absolute(r1[x][y]-l1[x][y-label-1]),20)**2
 	else:
 		
 		return min(np.absolute(r1[x][y]-l1[x][y+label+1]),20)**2
@@ -72,10 +72,10 @@ def energySmoothness(x,y,r1,dDict):
 	beta=0
 	if(x>=1):
 		beta=dDict[x-1][y]
-		totalcount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x-1][y])>=5)+40*(np.absolute(r1[x][y]-r1[x-1][y])<5))
+		totalcount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x-1][y])>=10)+40*(np.absolute(r1[x][y]-r1[x-1][y])<10))
 	if(y>=1):
 		beta=dDict[x][y-1]
-		totalcount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x][y-1])>=5)+40*(np.absolute(r1[x][y]-r1[x][y-1])<5))
+		totalcount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x][y-1])>=10)+40*(np.absolute(r1[x][y]-r1[x][y-1])<10))
 	
 	return totalcount
 
@@ -87,16 +87,16 @@ def energysmooth(x,y,r1,dDict):
 	beta=0
 	if(x>=1 and dDict[x-1][y]!=alpha and dDict[x-1][y]!=beta):
 		beta=dDict[x-1][y]
-		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x-1][y])>=5)+40*(np.absolute(r1[x][y]-r1[x-1][y])<5))
+		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x-1][y])>=10)+40*(np.absolute(r1[x][y]-r1[x-1][y])<10))
 	if(y>=1 and dDict[x][y-1]!=alpha and dDict[x][y-1]!=beta):
 		beta=dDict[x][y-1]
-		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x][y-1])>=5)+40*(np.absolute(r1[x][y]-r1[x][y-1])<5))
+		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x][y-1])>=10)+40*(np.absolute(r1[x][y]-r1[x][y-1])<10))
 	if(x<=h-2 and dDict[x+1][y]!=alpha and dDict[x+1][y]!=beta):
 		beta=dDict[x+1][y]
-		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x+1][y])>=5)+40*(np.absolute(r1[x][y]-r1[x+1][y])<5))
+		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x+1][y])>=10)+40*(np.absolute(r1[x][y]-r1[x+1][y])<10))
 	if(y<=w-2 and dDict[x][y+1]!=alpha and dDict[x][y+1]!=beta):
 		beta=dDict[x][y+1]
-		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x][y+1])>=5)+40*(np.absolute(r1[x][y]-r1[x][y+1])<5))
+		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x][y+1])>=10)+40*(np.absolute(r1[x][y]-r1[x][y+1])<10))
 
 	del alpha 
 	
