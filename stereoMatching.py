@@ -130,13 +130,13 @@ def permute(nums):
 	result=list(combinations(nums,2))
 	return result
 
-def makeGraph(dDict,dLL,alpha,beta,r1,l1):
+def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
 # create new graph with vertex in alpha and beta 
 # giving energy and cap where cap=energy
 ###change
-	pixInA=dLL[alpha].copy()
+	pixInA=dLL1.copy()
 	print(len(pixInA))
-	pixInB=dLL[beta].copy()
+	pixInB=dLL2.copy()
 	pixInA.extend(pixInB)
 	print(len(pixInA))
 	numOfPix=len(pixInA)
@@ -145,21 +145,21 @@ def makeGraph(dDict,dLL,alpha,beta,r1,l1):
 	#first para is num of nodes, Second para is num of Edges not accurate number
 	nodes=newGraph.add_nodes(numOfPix)
 	# return identifiers of node added
-	for i in pixInA:
-		iInd=pixInA.index(i)
-		if(i[0]>=0):
-			if ((i[0]+1)<h and (i[0]+1,i[1]) in  pixInA):
+	for i in range(numOfPix):
+		x,y=pixInA[i]
+		if(x>=0):
+			if ((x+1)<h and (x+1,y) in pixInA):
 				neighbor = pixInA.index((i[0]+1,i[1]))
-				eE=edgeEnergy(dDict,i[0],i[1],i[0]+1,i[1],r1)
-				newGraph.add_edge(nodes[iInd],nodes[neighbor],eE,eE)
-		if(i[1]>=0):
-			if ((i[1]+1)<w and (i[0],i[1]+1) in pixInA):
+				eE=edgeEnergy(dDict,x,y,x+1,y,r1)
+				newGraph.add_edge(nodes[i],nodes[neighbor],eE,eE)
+		if(y>=0):
+			if ((y+1)<w and (x,y+1) in pixInA):
 				neighbor1 = pixInA.index((i[0],i[1]+1))
-				eE1=edgeEnergy(dDict,i[0],i[1],i[0],i[1]+1,r1)
-				newGraph.add_edge(nodes[iInd],nodes[neighbor1],eE1,eE1)
-		sC= 5*energysmooth(i[0],i[1],r1,dDict) + energyData(i[0],i[1],alpha,l1,r1)
-		tC= 5*energysmooth(i[0],i[1],r1,dDict) + energyData(i[0],i[1],beta,l1,r1)
-		newGraph.add_tedge(nodes[iInd],sC,tC)
+				eE1=edgeEnergy(dDict,x,y,x,y+1,r1)
+				newGraph.add_edge(nodes[i],nodes[neighbor1],eE1,eE1)
+		sC= 5*energysmooth(x,y,r1,dDict) + energyData(x,y,alpha,l1,r1)
+		tC= 5*energysmooth(x,y,r1,dDict) + energyData(x,y,beta,l1,r1)
+		newGraph.add_tedge(nodes[i],sC,tC)
 	return pixInA,newGraph,nodes
 
 def change_label(alpha,beta,pixInA,nodes,dLL,newGraph,dDict):
@@ -191,20 +191,20 @@ def swap(dDict,dLL,l1,r1,disInd):
 	totalEnergy=0
 	finalL=[]
 	coe=5
-	for y in dLL:
-		totalEnergy+=energyTotal(y,l1,r1,dLL.index(y),dDict,coe)
+	for y in range(len(dLL)):
+		totalEnergy+=energyTotal(dLL[y],l1,r1,y,dDict,coe)
 	h,w = r1.shape
 	while (success == 0):
 		for x in helper2:
 			newEnergy=0
-			pixInA,newGraph,nodes=makeGraph(dDict,dLL,x[0],x[1],r1,l1)
+			pixInA,newGraph,nodes=makeGraph(dDict,dLL[x[0]],dLL[x[1]],x[0],x[1],r1,l1)
 			print(len(dLL[0]),len(dLL[1]),len(dLL[2]),len(dLL[3]))
 			print(x)
 			print("new graph")
 			new_dLL=change_label(x[0],x[1],pixInA,nodes,dLL,newGraph,dDict)
 			print("label change")
-			for z in new_dLL:
-				newEnergy+=energyTotal(z,l1,r1,new_dLL.index(z),dDict,coe)
+			for z in range(len(new_dLL)):
+				newEnergy+=energyTotal(new_dLL[z],l1,r1,z,dDict,coe)
 			if (newEnergy < totalEnergy):
 				print("new min energy",totalEnergy,newEnergy)
 				totalEnergy=newEnergy
