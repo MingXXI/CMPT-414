@@ -208,8 +208,8 @@ def swap(dDict,dLL,l1,r1,disInd):
 			return dLL,finalL
 
 def main():
-	left_image = imageProcess('image_left.png')
-	right_image = imageProcess('image_right.png')
+	left_image = imageProcess('scene1.row3.col1.ppm')
+	right_image = imageProcess('scene1.row3.col2.ppm')
 	disInd = 4
 	initial= initState(left_image,right_image,disInd)
 	print("init")
