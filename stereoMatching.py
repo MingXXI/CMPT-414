@@ -72,10 +72,10 @@ def energySmoothness(x,y,r1,dDict):
 	beta=0
 	if(x>=1):
 		beta=dDict[x-1][y]
-		totalcount+=((alpha-beta)!=0)*(0.3*(np.absolute(r1[x][y]-r1[x-1][y])>10)+20*(np.absolute(r1[x][y]-r1[x-1][y])<10))
+		totalcount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x-1][y])>=5)+40*(np.absolute(r1[x][y]-r1[x-1][y])<5))
 	if(y>=1):
 		beta=dDict[x][y-1]
-		totalcount+=((alpha-beta)!=0)*(0.3*(np.absolute(r1[x][y]-r1[x][y-1])>10)+20*(np.absolute(r1[x][y]-r1[x][y-1])<10))
+		totalcount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x][y-1])>=5)+40*(np.absolute(r1[x][y]-r1[x][y-1])<5))
 	
 	return totalcount
 
@@ -87,16 +87,16 @@ def energysmooth(x,y,r1,dDict):
 	beta=0
 	if(x>=1 and dDict[x-1][y]!=alpha and dDict[x-1][y]!=beta):
 		beta=dDict[x-1][y]
-		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x-1][y])>=5)+40*(np.absolute(r1[x][y]-r1[x-1][y])<10))
+		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x-1][y])>=5)+40*(np.absolute(r1[x][y]-r1[x-1][y])<5))
 	if(y>=1 and dDict[x][y-1]!=alpha and dDict[x][y-1]!=beta):
 		beta=dDict[x][y-1]
-		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x][y-1])>=5)+40*(np.absolute(r1[x][y]-r1[x][y-1])<10))
+		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x][y-1])>=5)+40*(np.absolute(r1[x][y]-r1[x][y-1])<5))
 	if(x<=h-2 and dDict[x+1][y]!=alpha and dDict[x+1][y]!=beta):
 		beta=dDict[x+1][y]
-		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x+1][y])>=5)+40*(np.absolute(r1[x][y]-r1[x+1][y])<10))
+		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x+1][y])>=5)+40*(np.absolute(r1[x][y]-r1[x+1][y])<5))
 	if(y<=w-2 and dDict[x][y+1]!=alpha and dDict[x][y+1]!=beta):
 		beta=dDict[x][y+1]
-		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x][y+1])>=5)+40*(np.absolute(r1[x][y]-r1[x][y+1])<10))
+		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x][y+1])>=5)+40*(np.absolute(r1[x][y]-r1[x][y+1])<5))
 
 	del alpha 
 	
@@ -106,7 +106,7 @@ def energysmooth(x,y,r1,dDict):
 
 
 def edgeEnergy(alpha,beta,int1,int2):
-	energy = ((alpha-beta)!=0)*(0.3*(np.absolute(int1-int2)>10)+20*(np.absolute(int1-int2)<10))
+	energy = ((alpha-beta)!=0)*((np.absolute(int1-int2)>=10)*20+40*(np.absolute(int1-int2)<10))
 	return energy
 
 
@@ -239,24 +239,10 @@ def swap(dDict,dLL,l1,r1,disInd):
 			newGraph,nodes=makeGraph(dDict,dLL[x[0]],dLL[x[1]],x[0],x[1],r1,l1)
 			print('Current alpha-beta is:',x)
 			new_dLL=change_label(x[0],x[1],nodes,dLL,newGraph,dDict)
-			print('Before makeGraph, dLL is')
-			for i in range (len(dLL)):
-				print(len(dLL[i]),'\t', end = '')
-			print('\n')
-			testSpeed=time.time()
 			newGraph,nodes=makeGraph(dDict,dLL[x[0]],dLL[x[1]],x[0],x[1],r1,l1)
-			print("make graph time:%f"%(time.time()-testSpeed))
-			print('After makeGraph, dLL is')
-			for i in range (len(dLL)):
-				print(len(dLL[i]),'\t', end = '')
-			print('\n')
-
-			print('current alpha-beta is:',x)
-			testSpeed=time.time()
 			new_dLL=change_label(x[0],x[1],nodes,dLL,newGraph,dDict)
-			print("change label time:%f"%(time.time()-testSpeed))
-			print("label change")
-			testSpeed=time.time()
+
+
 			for z in range(len(new_dLL)):
 				newEnergy+=energyTotal(new_dLL[z],l1,r1,z,dDict,coe)
 			if (newEnergy < totalEnergy):
@@ -264,7 +250,6 @@ def swap(dDict,dLL,l1,r1,disInd):
 				totalEnergy=newEnergy
 				dLL=new_dLL.copy()
 				success=1
-			print("check energy time:%f"%(time.time()-testSpeed))
 			del newGraph
 			del nodes
 			del new_dLL
