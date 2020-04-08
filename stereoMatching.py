@@ -43,11 +43,11 @@ def imageProcess(file):
 # coe: Lamda
 
 
-def energyTotal(disList,l1,r1,label,dDict):
+def energyTotal(disList,l1,r1,label,dDict,coe1=10,coe2=15,coe3=5):
 	total=0
 	for i in disList:
 		D=energyData(i[0],i[1],label,l1,r1)
-		V=energySmoothness(i[0],i[1],r1,dDict)
+		V=energySmoothness(i[0],i[1],r1,dDict,coe1,coe2,coe3)
 		total+=(D+V)
 	return total
 def energyData(x,y,label,l1,r1):
@@ -168,8 +168,8 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1,coe1=10,coe2=15,coe3=5):
 				eE1=edgeEnergy(alpha, beta,r1[x][y],r1[x][y+1],coe1,coe2,coe3)
 				newGraph.add_edge(nodes[i],nodes[neighbor1],eE1,eE1)
 
-		sC= energysmooth(x,y,r1,dDict,coe1,coe2,coe3) + energyData(x,y,alpha,l1,r1,coe1,coe2,coe3)
-		tC= energysmooth(x,y,r1,dDict,coe1,coe2,coe3) + energyData(x,y,beta,l1,r1,coe1,coe2,coe3)
+		sC= energysmooth(x,y,r1,dDict,coe1,coe2,coe3) + energyData(x,y,alpha,l1,r1)
+		tC= energysmooth(x,y,r1,dDict,coe1,coe2,coe3) + energyData(x,y,beta,l1,r1)
 		newGraph.add_tedge(nodes[i],sC,tC)
 	del helpDict
 	del numOfPix
@@ -268,7 +268,8 @@ def swap(dDict,dLL,l1,r1,disInd,coe1=10,coe2=15,coe3=5):
 def main():
 	img1=str(input("input left image \n"))
 	img2=str(input("input right image \n"))
-	if (img1=='\n' or img2=='\n'):
+	if ((len(img1)==0) or (len(img2)==0)):
+		print("use default test")
 		left_image = imageProcess('scene1.row3.col1.ppm')
 		right_image = imageProcess('scene1.row3.col2.ppm')
 		disInd = 14
@@ -278,6 +279,8 @@ def main():
 	else:
 	# dis_image = np.zeros(right_image.shape,dtype = int)
 	# cv2.imwrite('Initial.png',dis_image)
+		left_image = imageProcess(img1)
+		right_image = imageProcess(img2)
 		disInd = int(input("input how many disparity set you want: \n"))
 		coe3 = float(input("threshold of indensity difference: \n"))
 		coe1 = float(input("what coefficient you want when intensity difference bigger than threshold: \n"))
