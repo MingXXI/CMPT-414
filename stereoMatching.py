@@ -59,38 +59,38 @@ def energyData(x,y,label,l1,r1):
 	else:
 		
 		return np.absolute(r1[x][y]-l1[x][y+label+1])
-def energySmoothness(x,y,r1,dDict):
+def energySmoothness(x,y,r1,dDict,coe1=10,coe2=15,coe3=5):
 	totalcount=0
 	alpha = dDict[x][y]
 	h,w=r1.shape
 	beta=0
 	if(x>=1):
 		beta=dDict[x-1][y]
-		totalcount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x-1][y])>=5)+15*(np.absolute(r1[x][y]-r1[x-1][y])<5))
+		totalcount+=((alpha-beta)!=0)*(coe1*(np.absolute(r1[x][y]-r1[x-1][y])>=coe3)+coe2*(np.absolute(r1[x][y]-r1[x-1][y])<coe3))
 	if(y>=1):
 		beta=dDict[x][y-1]
-		totalcount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x][y-1])>=5)+15*(np.absolute(r1[x][y]-r1[x][y-1])<5))
+		totalcount+=((alpha-beta)!=0)*(coe1*(np.absolute(r1[x][y]-r1[x][y-1])>=coe3)+coe2*(np.absolute(r1[x][y]-r1[x][y-1])<coe3))
 	
 	return totalcount
 
 #need all neighbor's energy to decide the energy of s-e-t
-def energysmooth(x,y,r1,dDict):
+def energysmooth(x,y,r1,dDict,coe1=10,coe2=15,coe3=5):
 	energeycount=0
 	h,w=r1.shape
 	alpha=dDict[x][y]
 	beta=0
 	if(x>=1 and dDict[x-1][y]!=alpha and dDict[x-1][y]!=beta):
 		beta=dDict[x-1][y]
-		energeycount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x-1][y])>=5)+15*(np.absolute(r1[x][y]-r1[x-1][y])<5))
+		energeycount+=((alpha-beta)!=0)*(coe1*(np.absolute(r1[x][y]-r1[x-1][y])>=coe3)+coe2*(np.absolute(r1[x][y]-r1[x-1][y])<coe3))
 	if(y>=1 and dDict[x][y-1]!=alpha and dDict[x][y-1]!=beta):
 		beta=dDict[x][y-1]
-		energeycount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x][y-1])>=5)+15*(np.absolute(r1[x][y]-r1[x][y-1])<5))
+		energeycount+=((alpha-beta)!=0)*(coe1*(np.absolute(r1[x][y]-r1[x][y-1])>=coe3)+coe2*(np.absolute(r1[x][y]-r1[x][y-1])<coe3))
 	if(x<=h-2 and dDict[x+1][y]!=alpha and dDict[x+1][y]!=beta):
 		beta=dDict[x+1][y]
-		energeycount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x+1][y])>=5)+15*(np.absolute(r1[x][y]-r1[x+1][y])<5))
+		energeycount+=((alpha-beta)!=0)*(coe1*(np.absolute(r1[x][y]-r1[x+1][y])>=coe3)+coe2*(np.absolute(r1[x][y]-r1[x+1][y])<coe3))
 	if(y<=w-2 and dDict[x][y+1]!=alpha and dDict[x][y+1]!=beta):
 		beta=dDict[x][y+1]
-		energeycount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x][y+1])>=5)+15*(np.absolute(r1[x][y]-r1[x][y+1])<5))
+		energeycount+=((alpha-beta)!=0)*(coe1*(np.absolute(r1[x][y]-r1[x][y+1])>=coe3)+coe2*(np.absolute(r1[x][y]-r1[x][y+1])<coe3))
 
 	del alpha 
 	
@@ -99,8 +99,8 @@ def energysmooth(x,y,r1,dDict):
 
 
 
-def edgeEnergy(alpha,beta,int1,int2):
-	energy = ((alpha-beta)!=0)*((np.absolute(int1-int2)>=5)*10+15*(np.absolute(int1-int2)<5))
+def edgeEnergy(alpha,beta,int1,int2,coe1=10,coe2=15,coe3=5):
+	energy = ((alpha-beta)!=0)*((np.absolute(int1-int2)>=coe3)*coe1+coe2*(np.absolute(int1-int2)<coe3))
 	return energy
 
 
@@ -132,7 +132,7 @@ def permute(nums):
 	result=list(combinations(nums,2))
 	return result
 
-def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
+def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1,coe1=10,coe2=15,coe3=5):
 # create new graph with vertex in alpha and beta 
 # giving energy and cap where cap=energy
 ###change
@@ -159,17 +159,17 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1):
 		if ((x+1)<h ):
 			neighbor = helpDict.get((x+1,y))
 			if (neighbor != None):
-				eE=edgeEnergy(alpha, beta,r1[x][y],r1[x+1][y])
+				eE=edgeEnergy(alpha, beta,r1[x][y],r1[x+1][y],coe1,coe2,coe3)
 				newGraph.add_edge(nodes[i],nodes[neighbor],eE,eE)
 			# and (((x,y+1) in dLL1) or ((x,y+1) in dLL2))
 		if ((y+1)<w ):
 			neighbor1 = helpDict.get((x,y+1))
 			if (neighbor1 != None):
-				eE1=edgeEnergy(alpha, beta,r1[x][y],r1[x][y+1])
+				eE1=edgeEnergy(alpha, beta,r1[x][y],r1[x][y+1],coe1,coe2,coe3)
 				newGraph.add_edge(nodes[i],nodes[neighbor1],eE1,eE1)
 
-		sC= energysmooth(x,y,r1,dDict) + energyData(x,y,alpha,l1,r1)
-		tC= energysmooth(x,y,r1,dDict) + energyData(x,y,beta,l1,r1)
+		sC= energysmooth(x,y,r1,dDict,coe1,coe2,coe3) + energyData(x,y,alpha,l1,r1,coe1,coe2,coe3)
+		tC= energysmooth(x,y,r1,dDict,coe1,coe2,coe3) + energyData(x,y,beta,l1,r1,coe1,coe2,coe3)
 		newGraph.add_tedge(nodes[i],sC,tC)
 	del helpDict
 	del numOfPix
@@ -211,7 +211,7 @@ def change_label(alpha,beta,nodes,dLL,newGraph,dDict):
 	#not sure if we need change edge relationship
 	return new_dLL
 
-def swap(dDict,dLL,l1,r1,disInd):
+def swap(dDict,dLL,l1,r1,disInd,coe1=10,coe2=15,coe3=5):
 	counter = 0
 	helper1 = [x for x in range(disInd)]
 	dis_image = np.zeros(r1.shape,dtype = int)
@@ -223,21 +223,21 @@ def swap(dDict,dLL,l1,r1,disInd):
 	iteration = 1
 	# finalL=[]
 	for y in range(len(dLL)):
-		totalEnergy+=energyTotal(dLL[y],l1,r1,y,dDict)
+		totalEnergy+=energyTotal(dLL[y],l1,r1,y,dDict,coe1,coe2,coe3)
 	h,w = r1.shape
 	while (success == 0):
 		print('Iteration:', iteration, 'Starts!!!')
 		for x in helper2:
 			newEnergy=0
-			newGraph,nodes=makeGraph(dDict,dLL[x[0]],dLL[x[1]],x[0],x[1],r1,l1)
+			newGraph,nodes=makeGraph(dDict,dLL[x[0]],dLL[x[1]],x[0],x[1],r1,l1,coe1,coe2,coe3)
 			print('Current alpha-beta is:',x)
 			new_dLL=change_label(x[0],x[1],nodes,dLL,newGraph,dDict)
-			newGraph,nodes=makeGraph(dDict,dLL[x[0]],dLL[x[1]],x[0],x[1],r1,l1)
+			newGraph,nodes=makeGraph(dDict,dLL[x[0]],dLL[x[1]],x[0],x[1],r1,l1,coe1,coe2,coe3)
 			new_dLL=change_label(x[0],x[1],nodes,dLL,newGraph,dDict)
 
 
 			for z in range(len(new_dLL)):
-				newEnergy+=energyTotal(new_dLL[z],l1,r1,z,dDict)
+				newEnergy+=energyTotal(new_dLL[z],l1,r1,z,dDict,coe1,coe2,coe3)
 			if (newEnergy < totalEnergy):
 				print("New Min Energy Found\n",totalEnergy,newEnergy)
 				totalEnergy=newEnergy
@@ -266,18 +266,25 @@ def swap(dDict,dLL,l1,r1,disInd):
 			return dis_image
 
 def main():
-	left_image = imageProcess('scene1.row3.col1.ppm')
-	right_image = imageProcess('scene1.row3.col2.ppm')
-
+	img1=str(input("input left image \n"))
+	img2=str(input("input right image \n"))
+	if (img1=='\n' or img2=='\n'):
+		left_image = imageProcess('scene1.row3.col1.ppm')
+		right_image = imageProcess('scene1.row3.col2.ppm')
+		disInd = 14
+		initial= initState(left_image,right_image,disInd)
+		print("Initial State Done!\n Now Swap")
+		result_image = swap(initial[1],initial[0],left_image,right_image,disInd)
+	else:
 	# dis_image = np.zeros(right_image.shape,dtype = int)
 	# cv2.imwrite('Initial.png',dis_image)
-	disInd = 14
-
-	# step = np.floor(255/disInd)
-
-	initial= initState(left_image,right_image,disInd)
-	print("Initial State Done!\n Now Swap")
-	result_image = swap(initial[1],initial[0],left_image,right_image,disInd)
+		disInd = int(input("input how many disparity set you want: \n"))
+		coe3 = float(input("threshold of indensity difference: \n"))
+		coe1 = float(input("what coefficient you want when intensity difference bigger than threshold: \n"))
+		coe2 = float(input("what coefficient you want when intensity difference smaller than threshold: \n"))
+		initial= initState(left_image,right_image,disInd)
+		print("Initial State Done!\n Now Swap")
+		result_image = swap(initial[1],initial[0],left_image,right_image,disInd,coe1,coe2,coe3)
 
 #	result_median_image = cv2.medianBlur(result_image,3)
 #	cv2.imwrite('Final Result with Median Filter.png',result_median_image)
