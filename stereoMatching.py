@@ -1,20 +1,14 @@
 # width(y) and height(x) is opposite
-from matplotlib import pyplot
 import numpy as np
-from PIL import Image
 # import PIL.image 	#require PIL package installation. 
 import cv2 	#
 # from energy import energy.py
-import collections # check 2 list has same elements elements 
 from itertools import permutations, combinations # for choosing alpha/beta randomly
 import copy # to do deep copy
 import time
 import maxflow
 def imageProcess(file):
 	im=cv2.imread(file)
-	height,width,color = im.shape
-	#WIDTH is y-axis, HEIGHT is x-axis
-	pixelNum=width*height
 	im2=cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
 	# data=im.getdata()
 	data=np.array(im2,dtype='int')
@@ -61,10 +55,10 @@ def energyData(x,y,label,l1,r1):
 
 	if (y+label+1>=w):
 		# deal with boundary of the image. some pixel in right omage do not appear in left image
-		return min(np.absolute(r1[x][y]-l1[x][y-label-1]),20)
+		return np.absolute(r1[x][y]-l1[x][y-label-1])
 	else:
 		
-		return min(np.absolute(r1[x][y]-l1[x][y+label+1]),20)
+		return np.absolute(r1[x][y]-l1[x][y+label+1])
 def energySmoothness(x,y,r1,dDict):
 	totalcount=0
 	alpha = dDict[x][y]
@@ -72,10 +66,10 @@ def energySmoothness(x,y,r1,dDict):
 	beta=0
 	if(x>=1):
 		beta=dDict[x-1][y]
-		totalcount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x-1][y])>=10)+40*(np.absolute(r1[x][y]-r1[x-1][y])<10))
+		totalcount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x-1][y])>=10)+15*(np.absolute(r1[x][y]-r1[x-1][y])<10))
 	if(y>=1):
 		beta=dDict[x][y-1]
-		totalcount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x][y-1])>=10)+40*(np.absolute(r1[x][y]-r1[x][y-1])<10))
+		totalcount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x][y-1])>=10)+15*(np.absolute(r1[x][y]-r1[x][y-1])<10))
 	
 	return totalcount
 
@@ -87,16 +81,16 @@ def energysmooth(x,y,r1,dDict):
 	beta=0
 	if(x>=1 and dDict[x-1][y]!=alpha and dDict[x-1][y]!=beta):
 		beta=dDict[x-1][y]
-		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x-1][y])>=10)+40*(np.absolute(r1[x][y]-r1[x-1][y])<10))
+		energeycount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x-1][y])>=10)+15*(np.absolute(r1[x][y]-r1[x-1][y])<10))
 	if(y>=1 and dDict[x][y-1]!=alpha and dDict[x][y-1]!=beta):
 		beta=dDict[x][y-1]
-		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x][y-1])>=10)+40*(np.absolute(r1[x][y]-r1[x][y-1])<10))
+		energeycount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x][y-1])>=10)+15*(np.absolute(r1[x][y]-r1[x][y-1])<10))
 	if(x<=h-2 and dDict[x+1][y]!=alpha and dDict[x+1][y]!=beta):
 		beta=dDict[x+1][y]
-		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x+1][y])>=10)+40*(np.absolute(r1[x][y]-r1[x+1][y])<10))
+		energeycount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x+1][y])>=10)+15*(np.absolute(r1[x][y]-r1[x+1][y])<10))
 	if(y<=w-2 and dDict[x][y+1]!=alpha and dDict[x][y+1]!=beta):
 		beta=dDict[x][y+1]
-		energeycount+=((alpha-beta)!=0)*(20*(np.absolute(r1[x][y]-r1[x][y+1])>=10)+40*(np.absolute(r1[x][y]-r1[x][y+1])<10))
+		energeycount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x][y+1])>=10)+15*(np.absolute(r1[x][y]-r1[x][y+1])<10))
 
 	del alpha 
 	
@@ -106,7 +100,7 @@ def energysmooth(x,y,r1,dDict):
 
 
 def edgeEnergy(alpha,beta,int1,int2):
-	energy = ((alpha-beta)!=0)*((np.absolute(int1-int2)>=10)*20+40*(np.absolute(int1-int2)<10))
+	energy = ((alpha-beta)!=0)*((np.absolute(int1-int2)>=10)*10+15*(np.absolute(int1-int2)<10))
 	return energy
 
 
@@ -277,7 +271,7 @@ def main():
 
 	# dis_image = np.zeros(right_image.shape,dtype = int)
 	# cv2.imwrite('Initial.png',dis_image)
-	disInd = 9
+	disInd = 14
 
 	# step = np.floor(255/disInd)
 
@@ -285,8 +279,8 @@ def main():
 	print("Initial State Done!\n Now Swap")
 	result_image = swap(initial[1],initial[0],left_image,right_image,disInd)
 
-	result_median_image = cv2.medianBlur(result_image,3)
-	cv2.imwrite('Final Result with Median Filter.png',result_median_image)
+#	result_median_image = cv2.medianBlur(result_image,3)
+#	cv2.imwrite('Final Result with Median Filter.png',result_median_image)
 
 
 
