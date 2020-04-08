@@ -66,10 +66,10 @@ def energySmoothness(x,y,r1,dDict):
 	beta=0
 	if(x>=1):
 		beta=dDict[x-1][y]
-		totalcount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x-1][y])>=10)+15*(np.absolute(r1[x][y]-r1[x-1][y])<10))
+		totalcount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x-1][y])>=5)+15*(np.absolute(r1[x][y]-r1[x-1][y])<5))
 	if(y>=1):
 		beta=dDict[x][y-1]
-		totalcount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x][y-1])>=10)+15*(np.absolute(r1[x][y]-r1[x][y-1])<10))
+		totalcount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x][y-1])>=5)+15*(np.absolute(r1[x][y]-r1[x][y-1])<5))
 	
 	return totalcount
 
@@ -81,16 +81,16 @@ def energysmooth(x,y,r1,dDict):
 	beta=0
 	if(x>=1 and dDict[x-1][y]!=alpha and dDict[x-1][y]!=beta):
 		beta=dDict[x-1][y]
-		energeycount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x-1][y])>=10)+15*(np.absolute(r1[x][y]-r1[x-1][y])<10))
+		energeycount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x-1][y])>=5)+15*(np.absolute(r1[x][y]-r1[x-1][y])<5))
 	if(y>=1 and dDict[x][y-1]!=alpha and dDict[x][y-1]!=beta):
 		beta=dDict[x][y-1]
-		energeycount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x][y-1])>=10)+15*(np.absolute(r1[x][y]-r1[x][y-1])<10))
+		energeycount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x][y-1])>=5)+15*(np.absolute(r1[x][y]-r1[x][y-1])<5))
 	if(x<=h-2 and dDict[x+1][y]!=alpha and dDict[x+1][y]!=beta):
 		beta=dDict[x+1][y]
-		energeycount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x+1][y])>=10)+15*(np.absolute(r1[x][y]-r1[x+1][y])<10))
+		energeycount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x+1][y])>=5)+15*(np.absolute(r1[x][y]-r1[x+1][y])<5))
 	if(y<=w-2 and dDict[x][y+1]!=alpha and dDict[x][y+1]!=beta):
 		beta=dDict[x][y+1]
-		energeycount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x][y+1])>=10)+15*(np.absolute(r1[x][y]-r1[x][y+1])<10))
+		energeycount+=((alpha-beta)!=0)*(10*(np.absolute(r1[x][y]-r1[x][y+1])>=5)+15*(np.absolute(r1[x][y]-r1[x][y+1])<5))
 
 	del alpha 
 	
@@ -100,7 +100,7 @@ def energysmooth(x,y,r1,dDict):
 
 
 def edgeEnergy(alpha,beta,int1,int2):
-	energy = ((alpha-beta)!=0)*((np.absolute(int1-int2)>=10)*10+15*(np.absolute(int1-int2)<10))
+	energy = ((alpha-beta)!=0)*((np.absolute(int1-int2)>=5)*10+15*(np.absolute(int1-int2)<5))
 	return energy
 
 
