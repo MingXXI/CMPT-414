@@ -211,7 +211,7 @@ def change_label(alpha,beta,nodes,dLL,newGraph,dDict):
 	#not sure if we need change edge relationship
 	return new_dLL
 
-def swap(dDict,dLL,l1,r1,disInd,coe1=10,coe2=15,coe3=5):
+def swap(dDict,dLL,l1,r1,disInd,coe1=20,coe2=40,coe3=5):
 	counter = 0
 	helper1 = [x for x in range(disInd)]
 	dis_image = np.zeros(r1.shape,dtype = int)
