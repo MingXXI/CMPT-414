@@ -49,22 +49,22 @@ def imageProcess(file):
 # coe: Lamda
 
 
-def energyTotal(disList,l1,r1,label,dDict,coe):
+def energyTotal(disList,l1,r1,label,dDict):
 	total=0
 	for i in disList:
 		D=energyData(i[0],i[1],label,l1,r1)
 		V=energySmoothness(i[0],i[1],r1,dDict)
-		total+=(D+coe*V)
+		total+=(D+V)
 	return total
 def energyData(x,y,label,l1,r1):
 	h,w=l1.shape
 
 	if (y+label+1>=w):
 		# deal with boundary of the image. some pixel in right omage do not appear in left image
-		return min(np.absolute(r1[x][y]-l1[x][y-label-1]),20)**2
+		return min(np.absolute(r1[x][y]-l1[x][y-label-1]),20)
 	else:
 		
-		return min(np.absolute(r1[x][y]-l1[x][y+label+1]),20)**2
+		return min(np.absolute(r1[x][y]-l1[x][y+label+1]),20)
 def energySmoothness(x,y,r1,dDict):
 	totalcount=0
 	alpha = dDict[x][y]
@@ -228,9 +228,8 @@ def swap(dDict,dLL,l1,r1,disInd):
 	totalEnergy = 0
 	iteration = 1
 	# finalL=[]
-	coe=5
 	for y in range(len(dLL)):
-		totalEnergy+=energyTotal(dLL[y],l1,r1,y,dDict,coe)
+		totalEnergy+=energyTotal(dLL[y],l1,r1,y,dDict)
 	h,w = r1.shape
 	while (success == 0):
 		print('Iteration:', iteration, 'Starts!!!')
@@ -244,7 +243,7 @@ def swap(dDict,dLL,l1,r1,disInd):
 
 
 			for z in range(len(new_dLL)):
-				newEnergy+=energyTotal(new_dLL[z],l1,r1,z,dDict,coe)
+				newEnergy+=energyTotal(new_dLL[z],l1,r1,z,dDict)
 			if (newEnergy < totalEnergy):
 				print("New Min Energy Found\n",totalEnergy,newEnergy)
 				totalEnergy=newEnergy
@@ -278,7 +277,7 @@ def main():
 
 	# dis_image = np.zeros(right_image.shape,dtype = int)
 	# cv2.imwrite('Initial.png',dis_image)
-	disInd = 15
+	disInd = 9
 
 	# step = np.floor(255/disInd)
 
