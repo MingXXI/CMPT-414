@@ -75,22 +75,21 @@ def energySmoothness(x,y,r1,dDict,coe1=10,coe2=15,coe3=5):
 	return totalcount
 
 #need all neighbor's energy to decide the energy of s-e-t
-def energysmooth(x,y,r1,dDict,coe1=10,coe2=15,coe3=5):
+def energysmooth(x,y,r1,dDict,coe1=10,coe2=15,coe3=5,beta):
 	energeycount=0
 	h,w=r1.shape
 	alpha=dDict[x][y]
-	beta=0
 	if(x>=1 and dDict[x-1][y]!=alpha and dDict[x-1][y]!=beta):
-		beta=dDict[x-1][y]
+		#beta=dDict[x-1][y]
 		energeycount+=((alpha-beta)!=0)*(coe1*(np.absolute(r1[x][y]-r1[x-1][y])>=coe3)+coe2*(np.absolute(r1[x][y]-r1[x-1][y])<coe3))
 	if(y>=1 and dDict[x][y-1]!=alpha and dDict[x][y-1]!=beta):
-		beta=dDict[x][y-1]
+		#beta=dDict[x][y-1]
 		energeycount+=((alpha-beta)!=0)*(coe1*(np.absolute(r1[x][y]-r1[x][y-1])>=coe3)+coe2*(np.absolute(r1[x][y]-r1[x][y-1])<coe3))
 	if(x<=h-2 and dDict[x+1][y]!=alpha and dDict[x+1][y]!=beta):
-		beta=dDict[x+1][y]
+		#beta=dDict[x+1][y]
 		energeycount+=((alpha-beta)!=0)*(coe1*(np.absolute(r1[x][y]-r1[x+1][y])>=coe3)+coe2*(np.absolute(r1[x][y]-r1[x+1][y])<coe3))
 	if(y<=w-2 and dDict[x][y+1]!=alpha and dDict[x][y+1]!=beta):
-		beta=dDict[x][y+1]
+		#beta=dDict[x][y+1]
 		energeycount+=((alpha-beta)!=0)*(coe1*(np.absolute(r1[x][y]-r1[x][y+1])>=coe3)+coe2*(np.absolute(r1[x][y]-r1[x][y+1])<coe3))
 
 	del alpha 
@@ -169,8 +168,8 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1,coe1=10,coe2=15,coe3=5):
 				eE1=edgeEnergy(alpha, beta,r1[x][y],r1[x][y+1],coe1,coe2,coe3)
 				newGraph.add_edge(nodes[i],nodes[neighbor1],eE1,eE1)
 
-		sC= energysmooth(x,y,r1,dDict,coe1,coe2,coe3) + energyData(x,y,alpha,l1,r1)
-		tC= energysmooth(x,y,r1,dDict,coe1,coe2,coe3) + energyData(x,y,beta,l1,r1)
+		sC= energysmooth(x,y,r1,dDict,coe1,coe2,coe3,beta) + energyData(x,y,alpha,l1,r1)
+		tC= energysmooth(x,y,r1,dDict,coe1,coe2,coe3,beta) + energyData(x,y,beta,l1,r1)
 		newGraph.add_tedge(nodes[i],sC,tC)
 	del helpDict
 	del numOfPix
