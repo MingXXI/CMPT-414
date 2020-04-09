@@ -55,7 +55,8 @@ def energyData(x,y,label,l1,r1):
 
 	if (y+label+1>=w):
 		# deal with boundary of the image. some pixel in right omage do not appear in left image
-		return np.absolute(r1[x][y]-l1[x][y-label-1])
+		# return np.absolute(r1[x][y]-l1[x][y-label-1])
+		return energyData(x,y-1,label,l1,r1)
 	else:
 		
 		return np.absolute(r1[x][y]-l1[x][y+label+1])
@@ -211,7 +212,7 @@ def change_label(alpha,beta,nodes,dLL,newGraph,dDict):
 	#not sure if we need change edge relationship
 	return new_dLL
 
-def swap(dDict,dLL,l1,r1,disInd,coe1=10,coe2=20,coe3=5):
+def swap(dDict,dLL,l1,r1,disInd,coe1=10,coe2=15,coe3=5):
 	counter = 0
 	helper1 = [x for x in range(disInd)]
 	dis_image = np.zeros(r1.shape,dtype = int)
