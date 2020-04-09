@@ -81,16 +81,16 @@ def energysmooth(x,y,r1,dDict,beta,coe1=10,coe2=15,coe3=5):
 	alpha=dDict[x][y]
 	if(x>=1 and dDict[x-1][y]!=alpha and dDict[x-1][y]!=beta):
 		#beta=dDict[x-1][y]
-		energeycount+=((alpha-beta)!=0)*(coe1*(np.absolute(r1[x][y]-r1[x-1][y])>=coe3)+coe2*(np.absolute(r1[x][y]-r1[x-1][y])<coe3))
+		energeycount+=((alpha-dDict[x-1][y])!=0)*(coe1*(np.absolute(r1[x][y]-r1[x-1][y])>=coe3)+coe2*(np.absolute(r1[x][y]-r1[x-1][y])<coe3))
 	if(y>=1 and dDict[x][y-1]!=alpha and dDict[x][y-1]!=beta):
 		#beta=dDict[x][y-1]
-		energeycount+=((alpha-beta)!=0)*(coe1*(np.absolute(r1[x][y]-r1[x][y-1])>=coe3)+coe2*(np.absolute(r1[x][y]-r1[x][y-1])<coe3))
+		energeycount+=((alpha-dDict[x][y-1])!=0)*(coe1*(np.absolute(r1[x][y]-r1[x][y-1])>=coe3)+coe2*(np.absolute(r1[x][y]-r1[x][y-1])<coe3))
 	if(x<=h-2 and dDict[x+1][y]!=alpha and dDict[x+1][y]!=beta):
 		#beta=dDict[x+1][y]
-		energeycount+=((alpha-beta)!=0)*(coe1*(np.absolute(r1[x][y]-r1[x+1][y])>=coe3)+coe2*(np.absolute(r1[x][y]-r1[x+1][y])<coe3))
+		energeycount+=((alpha-dDict[x+1][y])!=0)*(coe1*(np.absolute(r1[x][y]-r1[x+1][y])>=coe3)+coe2*(np.absolute(r1[x][y]-r1[x+1][y])<coe3))
 	if(y<=w-2 and dDict[x][y+1]!=alpha and dDict[x][y+1]!=beta):
 		#beta=dDict[x][y+1]
-		energeycount+=((alpha-beta)!=0)*(coe1*(np.absolute(r1[x][y]-r1[x][y+1])>=coe3)+coe2*(np.absolute(r1[x][y]-r1[x][y+1])<coe3))
+		energeycount+=((alpha-dDict[x][y+1])!=0)*(coe1*(np.absolute(r1[x][y]-r1[x][y+1])>=coe3)+coe2*(np.absolute(r1[x][y]-r1[x][y+1])<coe3))
 
 	del alpha 
 	
