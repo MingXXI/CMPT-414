@@ -168,8 +168,10 @@ def makeGraph(dDict,dLL1,dLL2,alpha,beta,r1,l1,coe1=10,coe2=15,coe3=5):
 				eE1=edgeEnergy(alpha, beta,r1[x][y],r1[x][y+1],coe1,coe2,coe3)
 				newGraph.add_edge(nodes[i],nodes[neighbor1],eE1,eE1)
 
-		sC= energysmooth(x,y,r1,dDict,beta,coe1,coe2,coe3) + energyData(x,y,alpha,l1,r1)
-		tC= energysmooth(x,y,r1,dDict,beta,coe1,coe2,coe3) + energyData(x,y,beta,l1,r1)
+		# sC= energysmooth(x,y,r1,dDict,beta,coe1,coe2,coe3) + energyData(x,y,alpha,l1,r1)
+		# tC= energysmooth(x,y,r1,dDict,beta,coe1,coe2,coe3) + energyData(x,y,beta,l1,r1)
+		sC= energySmoothness(x,y,r1,dDict,coe1,coe2,coe3) + energyData(x,y,alpha,l1,r1)
+		tC= energySmoothness(x,y,r1,dDict,coe1,coe2,coe3) + energyData(x,y,beta,l1,r1)
 		newGraph.add_tedge(nodes[i],sC,tC)
 	del helpDict
 	del numOfPix
